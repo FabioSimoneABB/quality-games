@@ -64,16 +64,6 @@
         .animate-bounce-subtle {
             animation: bounce-subtle 2s infinite ease-in-out;
         }
-        ::-webkit-scrollbar {
-            width: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: rgba(15, 23, 42, 0.5);
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #334155;
-            border-radius: 9999px;
-        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col justify-between antialiased selection:bg-indigo-500 selection:text-white">
@@ -227,7 +217,7 @@
                 <div class="text-sm text-slate-400 font-medium">
                     Risposte ricevute: <strong id="host-answers-submitted-count" class="text-indigo-400 text-lg">0</strong> / <span id="host-total-players-count">0</span>
                 </div>
-                <button id="host-next-btn" onclick="app.hostNextStep()" class="px-6 py-2.5 rounded-xl font-bold bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-600/30 transition-all">
+                <button id="host-next-btn" onclick="app.hostShowAnswer()" class="px-6 py-2.5 rounded-xl font-bold bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-600/30 transition-all">
                     Mostra Risposta
                 </button>
             </div>
@@ -448,6 +438,8 @@
                 this.answersReceived = {};
                 this.hostPollInterval = null;
                 this.playerPollInterval = null;
+                this.lastSeenAnswerShown = false;
+                this.lastSeenQuestionIdx = -1;
             }
 
             init() {
@@ -474,6 +466,8 @@
             goHome() {
                 clearInterval(this.hostPollInterval);
                 clearInterval(this.playerPollInterval);
+                clearInterval(this.questionTimer);
+                clearInterval(this.playerTimer);
                 this.role = null;
                 this.gameState = 'LOBBY';
                 document.getElementById('header-room-badge').classList.add('hidden');
@@ -491,7 +485,8 @@
                     id: randomId,
                     host_id: 'host-' + Date.now(),
                     game_state: 'LOBBY',
-                    current_question_idx: 0
+                    current_question_idx: 0,
+                    answer_shown: false
                 }]);
 
                 if (error) {
@@ -516,7 +511,6 @@
                     colorLight: "#ffffff",
                 });
 
-                // Polling host lobby ogni 1 secondo
                 clearInterval(this.hostPollInterval);
                 this.hostPollInterval = setInterval(() => this.updateHostLobbyUI(), 1000);
                 this.updateHostLobbyUI();
@@ -569,7 +563,8 @@
 
                 await this.supabase.from('rooms').update({
                     game_state: 'GAME',
-                    current_question_idx: 0
+                    current_question_idx: 0,
+                    answer_shown: false
                 }).eq('id', this.roomCode);
 
                 this.hostLoadQuestion(0);
@@ -635,7 +630,7 @@
                 }, 1000);
             }
 
-            hostShowAnswer() {
+            async hostShowAnswer() {
                 clearInterval(this.questionTimer);
                 this.gameState = 'ANSWER_SHOW';
                 const q = this.questions[this.currentQuestionIdx];
@@ -649,14 +644,24 @@
                     }
                 });
 
+                // ✅ IMPORTANTE: Setta answer_shown = true nel database
+                await this.supabase.from('rooms').update({
+                    answer_shown: true
+                }).eq('id', this.roomCode);
+
                 const nextBtn = document.getElementById('host-next-btn');
                 if (this.currentQuestionIdx + 1 >= this.questions.length) {
                     nextBtn.innerText = 'Mostra Podio Finale 🎉';
                     nextBtn.onclick = () => this.hostShowFinalLeaderboard();
                 } else {
                     nextBtn.innerText = 'Prossima Domanda ➡️';
-                    nextBtn.onclick = () => {
+                    nextBtn.onclick = async () => {
                         this.currentQuestionIdx++;
+                        // ✅ IMPORTANTE: Incrementa current_question_idx e setta answer_shown = false
+                        await this.supabase.from('rooms').update({
+                            current_question_idx: this.currentQuestionIdx,
+                            answer_shown: false
+                        }).eq('id', this.roomCode);
                         this.hostLoadQuestion(this.currentQuestionIdx);
                     };
                 }
@@ -665,6 +670,11 @@
             async hostShowFinalLeaderboard() {
                 this.gameState = 'LEADERBOARD';
                 const { data: players } = await this.supabase.from('players').select('*').eq('room_id', this.roomCode).order('score', { ascending: false });
+
+                // ✅ Aggiorna game_state a LEADERBOARD
+                await this.supabase.from('rooms').update({
+                    game_state: 'LEADERBOARD'
+                }).eq('id', this.roomCode);
 
                 const leaderboard = players || [];
                 this.sound.playFanfare();
@@ -741,9 +751,8 @@
 
                 this.showView('view-player-game');
 
-                // Polling per controllare game state
                 clearInterval(this.playerPollInterval);
-                this.playerPollInterval = setInterval(() => this.checkPlayerGameState(), 500);
+                this.playerPollInterval = setInterval(() => this.checkPlayerGameState(), 300);
                 this.checkPlayerGameState();
             }
 
@@ -751,11 +760,27 @@
                 const { data: room } = await this.supabase.from('rooms').select('*').eq('id', this.roomCode).single();
                 if (!room) return;
 
-                if (room.game_state === 'GAME' && this.gameState === 'LOBBY') {
-                    clearInterval(this.playerPollInterval);
-                    this.gameState = 'GAME';
-                    this.loadPlayerQuestion(room.current_question_idx);
-                } else if (room.game_state === 'LEADERBOARD' && this.gameState !== 'LEADERBOARD') {
+                // ✅ Detetta quando answer_shown diventa true → ferma timer
+                if (room.answer_shown && !this.lastSeenAnswerShown) {
+                    console.log('[PLAYER] Answer shown! Fermi timer');
+                    this.lastSeenAnswerShown = true;
+                    clearInterval(this.playerTimer);
+                    const btns = document.querySelectorAll('#player-buttons-grid button');
+                    btns.forEach(btn => btn.disabled = true);
+                }
+
+                // ✅ Detetta quando current_question_idx cambia → carica prossima domanda
+                if (room.current_question_idx > this.lastSeenQuestionIdx && room.game_state === 'GAME') {
+                    if (this.lastSeenQuestionIdx !== -1) {
+                        console.log('[PLAYER] Nuova domanda! Indice:', room.current_question_idx);
+                        this.lastSeenAnswerShown = false;
+                        this.loadPlayerQuestion(room.current_question_idx);
+                    }
+                    this.lastSeenQuestionIdx = room.current_question_idx;
+                }
+
+                // ✅ Detetta leaderboard
+                if (room.game_state === 'LEADERBOARD' && this.gameState !== 'LEADERBOARD') {
                     clearInterval(this.playerPollInterval);
                     this.gameState = 'LEADERBOARD';
                     const { data: players } = await this.supabase.from('players').select('*').eq('room_id', this.roomCode).order('score', { ascending: false });
@@ -768,6 +793,7 @@
                 if (idx >= this.questions.length) return;
 
                 const q = this.questions[idx];
+                this.currentQuestionIdx = idx;
                 this.mySelectedAnswer = null;
 
                 document.getElementById('player-ans-0').innerText = q.options[0];
@@ -789,7 +815,7 @@
                 this.mySelectedAnswer = idx;
                 this.sound.playBeep(600, 0.08);
 
-                const q = this.questions[this.currentQuestionIdx] || this.questions[0];
+                const q = this.questions[this.currentQuestionIdx];
                 const isCorrect = idx === q.correct;
 
                 if (isCorrect) {
@@ -812,16 +838,6 @@
                     if (i !== this.mySelectedAnswer) btn.classList.add('opacity-40');
                     else btn.classList.add('ring-4', 'ring-white');
                 });
-
-                // Polling per prossima domanda
-                this.currentQuestionIdx++;
-                this.playerPollInterval = setInterval(async () => {
-                    const { data: room } = await this.supabase.from('rooms').select('*').eq('id', this.roomCode).single();
-                    if (room && room.current_question_idx > this.currentQuestionIdx - 1) {
-                        clearInterval(this.playerPollInterval);
-                        this.loadPlayerQuestion(room.current_question_idx);
-                    }
-                }, 500);
             }
 
             startPlayerLocalTimer(seconds) {
