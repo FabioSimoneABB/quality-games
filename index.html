@@ -395,6 +395,7 @@
                 this.answersReceived = {};
                 this.channel = null;
                 this.gameUpdatesChannel = null;
+                this.pollInterval = null;
             }
 
             init() {
@@ -426,6 +427,7 @@
             goHome() {
                 if (this.channel) this.channel.unsubscribe();
                 if (this.gameUpdatesChannel) this.gameUpdatesChannel.unsubscribe();
+                clearInterval(this.pollInterval);
                 this.role = null;
                 this.gameState = 'LOBBY';
                 document.getElementById('header-room-badge').classList.add('hidden');
@@ -442,12 +444,11 @@
                     const { error } = await this.supabase.from('rooms').insert([{
                         id: randomId,
                         host_id: 'host-' + Math.random().toString(36).substr(2, 9),
-                        game_state: 'LOBBY',
-                        current_question_idx: 0
+                        game_state: 'LOBBY'
                     }]);
 
                     if (error) {
-                        alert('Errore: ' + error.message);
+                        alert('Errore Supabase: ' + error.message);
                         return;
                     }
 
@@ -467,7 +468,14 @@
                         correctLevel: QRCode.CorrectLevel.H
                     });
 
-                    this.setupHostSubscriptions();
+                    // POLLING FALLBACK OGNI 1.5 SECONDI
+                    clearInterval(this.pollInterval);
+                    this.pollInterval = setInterval(() => {
+                        if (this.role === 'host' && this.roomCode && this.gameState === 'LOBBY') {
+                            this.updateHostLobbyUI();
+                        }
+                    }, 1500);
+
                     this.updateHostLobbyUI();
                     this.showView('view-host-lobby');
                 } catch (err) {
@@ -476,27 +484,12 @@
                 }
             }
 
-            setupHostSubscriptions() {
-                if (this.channel) this.channel.unsubscribe();
-                
-                this.channel = this.supabase.channel(`room:${this.roomCode}`);
-                
-                this.channel.on('postgres_changes', {
-                    event: '*',
-                    schema: 'public',
-                    table: 'players',
-                    filter: `room_id=eq.${this.roomCode}`
-                }, () => {
-                    this.updateHostLobbyUI();
-                }).subscribe();
-            }
-
             async updateHostLobbyUI() {
                 try {
                     const { data: players, error } = await this.supabase.from('players').select('*').eq('room_id', this.roomCode);
                     
                     if (error) {
-                        console.error('Errore:', error);
+                        console.error('Errore Supabase:', error);
                         return;
                     }
                     
@@ -540,13 +533,16 @@
                     return;
                 }
                 
+                clearInterval(this.pollInterval);
                 this.currentQuestionIdx = 0;
+                this.gameState = 'QUESTION';
                 await this.supabase.from('rooms').update({ game_state: 'GAME' }).eq('id', this.roomCode);
                 
                 // Broadcast a tutti i player
                 const gameUpdateChannel = this.supabase.channel(`game:${this.roomCode}`);
                 gameUpdateChannel.send('broadcast', { type: 'GAME_START' });
                 gameUpdateChannel.subscribe();
+                this.gameUpdatesChannel = gameUpdateChannel;
                 
                 this.hostLoadQuestion(this.currentQuestionIdx);
                 this.showView('view-host-game');
@@ -584,12 +580,13 @@
                 document.getElementById('host-next-btn').classList.add('hidden');
 
                 // Broadcast la nuova domanda
-                const gameUpdateChannel = this.supabase.channel(`game:${this.roomCode}`);
-                gameUpdateChannel.send('broadcast', { 
-                    type: 'NEW_QUESTION', 
-                    options: q.options,
-                    timer: q.timer 
-                });
+                if (this.gameUpdatesChannel) {
+                    this.gameUpdatesChannel.send('broadcast', { 
+                        type: 'NEW_QUESTION', 
+                        options: q.options,
+                        timer: q.timer 
+                    });
+                }
 
                 this.startHostTimer(q.timer);
             }
@@ -619,7 +616,7 @@
                 }, 1000);
             }
 
-            async hostShowAnswer() {
+            hostShowAnswer() {
                 clearInterval(this.questionTimer);
                 this.gameState = 'ANSWER_SHOW';
                 const q = this.questions[this.currentQuestionIdx];
@@ -634,12 +631,13 @@
                 });
 
                 // Broadcast risposta corretta
-                const gameUpdateChannel = this.supabase.channel(`game:${this.roomCode}`);
-                gameUpdateChannel.send('broadcast', {
-                    type: 'SHOW_ANSWER',
-                    correctIdx: q.correct,
-                    options: q.options
-                });
+                if (this.gameUpdatesChannel) {
+                    this.gameUpdatesChannel.send('broadcast', {
+                        type: 'SHOW_ANSWER',
+                        correctIdx: q.correct,
+                        options: q.options
+                    });
+                }
 
                 document.getElementById('host-show-answer-btn').classList.add('hidden');
                 document.getElementById('host-next-btn').classList.remove('hidden');
@@ -662,8 +660,9 @@
                 this.sound.playFanfare();
                 confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 } });
 
-                const gameUpdateChannel = this.supabase.channel(`game:${this.roomCode}`);
-                gameUpdateChannel.send('broadcast', { type: 'SHOW_LEADERBOARD', leaderboard });
+                if (this.gameUpdatesChannel) {
+                    this.gameUpdatesChannel.send('broadcast', { type: 'SHOW_LEADERBOARD', leaderboard });
+                }
 
                 this.renderLeaderboard(leaderboard);
                 this.showView('view-leaderboard');
@@ -677,10 +676,18 @@
             async playerSubmitJoin(e) {
                 e.preventDefault();
                 try {
-                    const code = document.getElementById('join-room-code').value.trim();
+                    const code = document.getElementById('join-room-code').value.trim().toUpperCase();
                     const name = document.getElementById('join-nickname').value.trim();
 
                     if (!code || !name) return;
+
+                    // Verifica che la stanza esista
+                    const { data: room, error: roomError } = await this.supabase.from('rooms').select('*').eq('id', code).single();
+                    
+                    if (roomError || !room) {
+                        alert('Stanza non trovata!');
+                        return;
+                    }
 
                     this.roomCode = code;
                     this.playerName = name;
@@ -689,15 +696,8 @@
                     document.getElementById('header-room-code').innerText = code;
                     document.getElementById('header-room-badge').classList.remove('hidden');
 
-                    const { data: room, error: roomError } = await this.supabase.from('rooms').select('*').eq('id', code).single();
-                    
-                    if (roomError || !room) {
-                        alert('Stanza non trovata');
-                        return;
-                    }
-
                     const playerId = 'player-' + Math.random().toString(36).substr(2, 9);
-                    const { error: insertError } = await this.supabase.from('players').insert([{
+                    const { error: insertError, data: insertData } = await this.supabase.from('players').insert([{
                         id: playerId,
                         room_id: code,
                         name: name,
@@ -706,6 +706,7 @@
                     }]);
 
                     if (insertError) {
+                        console.error('Errore insert:', insertError);
                         alert('Errore nel collegamento: ' + insertError.message);
                         return;
                     }
@@ -750,7 +751,7 @@
                         document.getElementById('player-status-text').innerText = 'Esatto! 🎉';
                     } else {
                         this.sound.playWrong();
-                        document.getElementById('player-status-text').innerText = 'Errato ❌ Risposta: ' + data.options[data.correctIdx];
+                        document.getElementById('player-status-text').innerText = 'Errato ❌';
                     }
                 } else if (data.type === 'SHOW_LEADERBOARD') {
                     this.renderLeaderboard(data.leaderboard);
@@ -779,7 +780,6 @@
                 }
 
                 document.getElementById('player-disp-score').innerText = `${this.myScore} PUNTI`;
-                document.getElementById('player-status-text').innerText = 'Risposta inviata!';
 
                 // Aggiorna lo score nel database
                 await this.supabase.from('players').update({ score: this.myScore }).eq('id', this.playerData.id);
