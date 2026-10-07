@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Quality Games Hub - Supabase Real-Time</title>
+    <title>Quality Games Hub - DEBUG VERSION</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -35,35 +35,29 @@
             border: 1px solid rgba(255, 255, 255, 0.08);
             transition: all 0.2s ease-in-out;
         }
-        .glass-card:hover {
-            border-color: rgba(99, 102, 241, 0.4);
-            transform: translateY(-2px);
-        }
         .gradient-text {
             background: linear-gradient(135deg, #38bdf8 0%, #818cf8 50%, #c084fc 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
-        .btn-answer {
-            transition: transform 0.1s ease, box-shadow 0.1s ease;
+        .debug-box {
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            padding: 1rem;
+            border-radius: 0.75rem;
+            font-size: 0.75rem;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            margin: 1rem 0;
         }
-        .btn-answer:active {
-            transform: scale(0.95) !important;
+        .debug-line {
+            padding: 0.25rem 0;
+            border-bottom: 1px solid rgba(99, 102, 241, 0.1);
         }
-        @keyframes pulse-fast {
-            0%, 100% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.08); opacity: 0.8; }
-        }
-        .animate-pulse-fast {
-            animation: pulse-fast 0.6s infinite ease-in-out;
-        }
-        @keyframes bounce-subtle {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-8px); }
-        }
-        .animate-bounce-subtle {
-            animation: bounce-subtle 2s infinite ease-in-out;
-        }
+        .debug-error { color: #ff6b6b; }
+        .debug-success { color: #51cf66; }
+        .debug-info { color: #74c0fc; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col justify-between antialiased selection:bg-indigo-500 selection:text-white">
@@ -75,257 +69,71 @@
             </div>
             <div>
                 <h1 class="text-lg font-extrabold tracking-tight leading-none text-white">Quality<span class="gradient-text">Games</span></h1>
-                <p class="text-[10px] text-slate-400 font-medium tracking-wide uppercase">Fabio Simone</p>
-            </div>
-        </div>
-
-        <div class="flex items-center space-x-2">
-            <button id="audio-toggle" onclick="app.toggleAudio()" class="w-9 h-9 rounded-lg bg-slate-800/80 hover:bg-slate-700 flex items-center justify-center text-slate-300 transition-colors">
-                <i id="audio-icon" class="fa-solid fa-volume-high"></i>
-            </button>
-            <div id="header-room-badge" class="hidden px-3 py-1 rounded-full bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 text-xs font-bold flex items-center space-x-1.5">
-                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-                <span>ROOM: <span id="header-room-code">------</span></span>
+                <p class="text-[10px] text-slate-400 font-medium tracking-wide uppercase">DEBUG MODE</p>
             </div>
         </div>
     </header>
 
-    <main class="flex-grow flex flex-col items-center justify-center p-4 sm:p-6 max-w-6xl w-full mx-auto">
+    <main class="flex-grow flex flex-col items-center justify-center p-4 sm:p-6 max-w-4xl w-full mx-auto">
 
-        <section id="view-home" class="w-full max-w-4xl space-y-8 py-4">
+        <section id="view-home" class="w-full max-w-2xl space-y-6 py-4">
             <div class="text-center space-y-3">
-                <div class="inline-flex items-center px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold">
-                    <i class="fa-solid fa-wifi mr-1.5"></i> Powered by Supabase Realtime
-                </div>
-                <h2 class="text-3xl sm:text-5xl font-extrabold text-white tracking-tight">Sfida il tuo <span class="gradient-text">Team Qualità</span></h2>
-                <p class="text-slate-400 max-w-xl mx-auto text-sm sm:text-base">Incoming Inspection, FAI, Laboratorio e Qualità di Processo. Collega gli smartphone della sala via QR Code!</p>
+                <h2 class="text-3xl font-extrabold text-white tracking-tight">🔧 Debug Quality Games</h2>
+                <p class="text-slate-400">Testa la connessione a Supabase</p>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
-                <div onclick="app.startHostFlow()" class="glass-panel p-8 rounded-2xl cursor-pointer group hover:border-indigo-500/50 transition-all duration-300 flex flex-col justify-between space-y-6 relative overflow-hidden">
-                    <div class="space-y-4">
-                        <div class="w-14 h-14 rounded-2xl bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400 text-2xl group-hover:scale-110 transition-transform">
-                            <i class="fa-solid fa-desktop"></i>
-                        </div>
-                        <div>
-                            <h3 class="text-2xl font-bold text-white group-hover:text-indigo-400 transition-colors">Modalità HOST</h3>
-                            <p class="text-slate-400 text-sm mt-1">Crea una stanza e controlla lo svolgimento della sfida.</p>
-                        </div>
-                    </div>
-                    <div class="flex items-center text-indigo-400 text-sm font-bold space-x-2">
-                        <span>Crea Nuova Stanza</span>
-                        <i class="fa-solid fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div onclick="app.testSupabaseConnection()" class="glass-panel p-6 rounded-2xl cursor-pointer group hover:border-indigo-500/50 transition-all">
+                    <div class="space-y-2">
+                        <i class="fa-solid fa-database text-indigo-400 text-2xl"></i>
+                        <h3 class="text-lg font-bold text-white">Test Supabase</h3>
+                        <p class="text-xs text-slate-400">Verifica connessione e tabelle</p>
                     </div>
                 </div>
 
-                <div onclick="app.startPlayerFlow()" class="glass-panel p-8 rounded-2xl cursor-pointer group hover:border-emerald-500/50 transition-all duration-300 flex flex-col justify-between space-y-6 relative overflow-hidden">
-                    <div class="space-y-4">
-                        <div class="w-14 h-14 rounded-2xl bg-emerald-600/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400 text-2xl group-hover:scale-110 transition-transform">
-                            <i class="fa-solid fa-mobile-screen-button"></i>
-                        </div>
-                        <div>
-                            <h3 class="text-2xl font-bold text-white group-hover:text-emerald-400 transition-colors">Modalità GIOCATORE</h3>
-                            <p class="text-slate-400 text-sm mt-1">Unisciti alla sfida inquadrando il QR Code o inserendo il codice.</p>
-                        </div>
-                    </div>
-                    <div class="flex items-center text-emerald-400 text-sm font-bold space-x-2">
-                        <span>Entra nella Stanza</span>
-                        <i class="fa-solid fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
+                <div onclick="app.createTestRoom()" class="glass-panel p-6 rounded-2xl cursor-pointer group hover:border-emerald-500/50 transition-all">
+                    <div class="space-y-2">
+                        <i class="fa-solid fa-plus text-emerald-400 text-2xl"></i>
+                        <h3 class="text-lg font-bold text-white">Crea Stanza Test</h3>
+                        <p class="text-xs text-slate-400">Crea una stanza per testare</p>
                     </div>
                 </div>
             </div>
+
+            <div id="debug-output" class="debug-box">
+                <div class="debug-line debug-info">🟦 In attesa di test...</div>
+            </div>
+
+            <button onclick="app.goToHostMode()" class="w-full py-3 rounded-xl font-bold bg-indigo-600 hover:bg-indigo-500 text-white">
+                Vai a Modalità HOST
+            </button>
         </section>
 
         <section id="view-host-lobby" class="hidden w-full max-w-4xl space-y-6">
-            <div class="flex flex-col md:flex-row gap-6 items-stretch">
-                <div class="glass-panel p-6 rounded-2xl md:w-5/12 flex flex-col items-center justify-between text-center space-y-4">
-                    <div>
-                        <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">Codice Stanza</span>
-                        <div id="lobby-room-code-display" class="text-3xl sm:text-4xl font-black text-indigo-400 tracking-wider my-1 font-mono">Generazione...</div>
-                        <p class="text-xs text-slate-400">Inquadra il QR Code col telefono</p>
-                    </div>
-                    <div class="p-3 bg-white rounded-2xl shadow-xl flex items-center justify-center min-w-[190px] min-h-[190px]" id="qrcode-container"></div>
+            <div class="flex flex-col gap-4">
+                <div class="glass-panel p-6 rounded-2xl text-center">
+                    <span class="text-xs font-bold text-slate-400 uppercase">Codice Stanza</span>
+                    <div id="lobby-room-code-display" class="text-4xl font-black text-indigo-400 tracking-wider my-3 font-mono">---</div>
                 </div>
 
-                <div class="glass-panel p-6 rounded-2xl md:w-7/12 flex flex-col justify-between space-y-6">
-                    <div>
-                        <div class="flex justify-between items-center mb-4">
-                            <h3 class="text-xl font-bold text-white flex items-center space-x-2">
-                                <i class="fa-solid fa-users text-indigo-400"></i>
-                                <span>Partecipanti Collegati</span>
-                            </h3>
-                            <span id="player-count-badge" class="px-3 py-1 rounded-full bg-indigo-600/30 text-indigo-300 font-extrabold text-sm border border-indigo-500/30">0 Giocatori</span>
-                        </div>
-                        <div id="lobby-players-list" class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 max-h-52 overflow-y-auto pr-1">
-                            <div class="col-span-full py-8 text-center text-slate-500 text-sm italic">In attesa che i giocatori si colleghino...</div>
-                        </div>
-                    </div>
-
-                    <div class="space-y-3 pt-4 border-t border-slate-800">
-                        <div class="flex justify-between items-center text-xs text-slate-400">
-                            <span>Set Domande: <strong id="lobby-questions-count" class="text-slate-200">8 Domande</strong></span>
-                            <div class="flex items-center space-x-2">
-                                <button onclick="app.exportQuestions()" class="text-emerald-400 hover:text-emerald-300 font-bold flex items-center space-x-1 px-2 py-1 bg-slate-800 rounded-lg text-xs">
-                                    <i class="fa-solid fa-download"></i> Esporta
-                                </button>
-                                <button onclick="app.importQuestions()" class="text-sky-400 hover:text-sky-300 font-bold flex items-center space-x-1 px-2 py-1 bg-slate-800 rounded-lg text-xs">
-                                    <i class="fa-solid fa-upload"></i> Importa
-                                </button>
-                                <input type="file" id="json-file-input" accept=".json" class="hidden" onchange="app.handleJsonImport(event)">
-                                <button onclick="app.openQuestionEditor()" class="text-indigo-400 hover:text-indigo-300 font-bold flex items-center space-x-1 px-2 py-1 bg-indigo-950/60 border border-indigo-500/30 rounded-lg text-xs">
-                                    <i class="fa-solid fa-pen-to-square"></i> Modifica
-                                </button>
-                            </div>
-                        </div>
-
-                        <button id="btn-start-game" onclick="app.hostStartGame()" disabled class="w-full py-4 rounded-xl font-black text-lg bg-slate-800 text-slate-500 cursor-not-allowed shadow-lg transition-all duration-200">
-                            Inizia il Gioco (<span id="start-btn-players-count">0</span> Pronti)
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section id="view-host-game" class="hidden w-full max-w-4xl space-y-6">
-            <div class="glass-panel p-6 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-4">
-                <div class="space-y-1 text-center md:text-left flex-grow">
-                    <span id="host-q-category" class="px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 text-xs font-bold border border-indigo-500/30">Qualità</span>
-                    <h2 id="host-q-text" class="text-xl md:text-2xl font-extrabold text-white leading-snug mt-2">Testo della Domanda...</h2>
-                </div>
-                <div class="flex-shrink-0 flex flex-col items-center justify-center">
-                    <div id="host-timer-circle" class="w-20 h-20 rounded-full border-4 border-indigo-500 flex items-center justify-center bg-slate-900/80 shadow-lg shadow-indigo-500/20">
-                        <span id="host-timer-seconds" class="text-3xl font-black text-white">30</span>
-                    </div>
-                </div>
-            </div>
-            <div id="host-answers-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
-            <div class="glass-panel p-4 rounded-2xl flex justify-between items-center">
-                <div class="text-sm text-slate-400 font-medium">
-                    Risposte ricevute: <strong id="host-answers-submitted-count" class="text-indigo-400 text-lg">0</strong> / <span id="host-total-players-count">0</span>
-                </div>
-                <div class="flex gap-2">
-                    <button id="host-show-answer-btn" onclick="app.hostShowAnswer()" class="px-4 py-2.5 rounded-xl font-bold bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-600/30 transition-all text-sm">Mostra Risposta</button>
-                    <button id="host-next-btn" onclick="app.hostNextQuestion()" class="px-6 py-2.5 rounded-xl font-bold bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-600/30 transition-all hidden">Prossima Domanda</button>
-                </div>
-            </div>
-        </section>
-
-        <section id="view-player-join" class="hidden w-full max-w-md space-y-6">
-            <div class="glass-panel p-8 rounded-3xl space-y-6 text-center border-t-4 border-emerald-500">
-                <div class="space-y-2">
-                    <div class="w-12 h-12 rounded-2xl bg-emerald-500/20 border border-emerald-500/30 mx-auto flex items-center justify-center text-emerald-400 text-xl">
-                        <i class="fa-solid fa-gamepad"></i>
-                    </div>
-                    <h2 class="text-2xl font-black text-white">Unisciti alla Sfida</h2>
+                <div class="glass-panel p-4 rounded-2xl text-center">
+                    <div id="lobby-players-count" class="text-2xl font-bold text-white">0 Giocatori</div>
+                    <div id="lobby-players-list" class="mt-4 space-y-2 text-left text-sm"></div>
                 </div>
 
-                <form onsubmit="app.playerSubmitJoin(event)" class="space-y-4 text-left">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Codice Stanza</label>
-                        <input type="text" id="join-room-code" required placeholder="Es. qg-8492" class="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white text-center text-xl tracking-wider font-mono focus:outline-none focus:border-emerald-500">
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Il tuo Nome</label>
-                        <input type="text" id="join-nickname" required placeholder="Es. Mario" maxlength="20" class="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white focus:outline-none focus:border-emerald-500">
-                    </div>
-
-                    <button type="submit" class="w-full py-4 rounded-xl font-black text-lg bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-500/20 hover:opacity-95 transition-all">
-                        Connetti e Gioca
-                    </button>
-                </form>
-            </div>
-        </section>
-
-        <section id="view-player-game" class="hidden w-full max-w-md space-y-4">
-            <div class="glass-panel p-4 rounded-2xl flex justify-between items-center">
-                <div class="flex items-center space-x-2">
-                    <div id="player-disp-name" class="text-sm font-bold text-white">Giocatore</div>
-                    <div id="player-disp-score" class="text-xs text-indigo-400 font-mono font-bold">0 PUNTI</div>
-                </div>
-                <div id="player-timer-badge" class="px-3 py-1 rounded-full bg-slate-800 text-white font-mono font-black text-lg border border-slate-700">--s</div>
-            </div>
-
-            <div id="player-status-banner" class="glass-card p-4 rounded-2xl text-center">
-                <p id="player-status-text" class="text-sm font-bold text-slate-400">In Attesa dell'Host...</p>
-            </div>
-
-            <div id="player-buttons-grid" class="grid grid-cols-1 gap-3">
-                <button onclick="app.playerSubmitAnswer(0)" class="btn-answer w-full p-5 rounded-2xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-left flex items-center space-x-4">
-                    <span class="w-10 h-10 rounded-xl bg-black/20 flex items-center justify-center text-lg font-black flex-shrink-0">A</span>
-                    <span id="player-ans-0" class="text-base">Opzione A</span>
-                </button>
-
-                <button onclick="app.playerSubmitAnswer(1)" class="btn-answer w-full p-5 rounded-2xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-left flex items-center space-x-4">
-                    <span class="w-10 h-10 rounded-xl bg-black/20 flex items-center justify-center text-lg font-black flex-shrink-0">B</span>
-                    <span id="player-ans-1" class="text-base">Opzione B</span>
-                </button>
-
-                <button onclick="app.playerSubmitAnswer(2)" class="btn-answer w-full p-5 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-left flex items-center space-x-4">
-                    <span class="w-10 h-10 rounded-xl bg-black/10 flex items-center justify-center text-lg font-black flex-shrink-0">C</span>
-                    <span id="player-ans-2" class="text-base">Opzione C</span>
-                </button>
-
-                <button onclick="app.playerSubmitAnswer(3)" class="btn-answer w-full p-5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-left flex items-center space-x-4">
-                    <span class="w-10 h-10 rounded-xl bg-black/20 flex items-center justify-center text-lg font-black flex-shrink-0">D</span>
-                    <span id="player-ans-3" class="text-base">Opzione D</span>
+                <button id="btn-start-game" onclick="app.hostStartGame()" disabled class="w-full py-3 rounded-xl font-bold bg-slate-800 text-slate-500 cursor-not-allowed">
+                    Inizia il Gioco (0 pronti)
                 </button>
             </div>
-        </section>
 
-        <section id="view-leaderboard" class="hidden w-full max-w-4xl space-y-8 text-center py-4">
-            <div class="space-y-2">
-                <span class="px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 text-xs font-bold border border-amber-500/30 uppercase tracking-widest">
-                    <i class="fa-solid fa-trophy mr-1.5"></i>Classifica Finale
-                </span>
-                <h2 class="text-3xl sm:text-5xl font-black text-white">I Campioni della <span class="gradient-text">Qualità</span></h2>
+            <div id="debug-output2" class="debug-box">
+                <div class="debug-line debug-info">🟦 Host lobby attivo</div>
             </div>
-
-            <div id="podium-container" class="flex justify-center items-end gap-3 sm:gap-6 pt-10 pb-4 max-w-xl mx-auto"></div>
-
-            <div class="glass-panel p-6 rounded-2xl text-left max-w-2xl mx-auto">
-                <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4">Classifica Generale</h3>
-                <div id="full-leaderboard-list" class="space-y-2 max-h-64 overflow-y-auto pr-1"></div>
-            </div>
-
-            <button onclick="app.goHome()" class="px-8 py-3.5 rounded-xl font-bold bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-600/30 transition-all">
-                Torna al Menu Principale
-            </button>
         </section>
     </main>
 
-    <!-- MODAL: Question Editor -->
-    <div id="modal-editor" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
-        <div class="glass-panel w-full max-w-3xl rounded-3xl p-6 space-y-6 max-h-[90vh] flex flex-col justify-between border border-slate-700 shadow-2xl">
-            <div class="flex justify-between items-center border-b border-slate-800 pb-4">
-                <h3 class="text-xl font-bold text-white">Editor Domande</h3>
-                <button onclick="app.closeQuestionEditor()" class="w-8 h-8 rounded-lg bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
-            </div>
-
-            <div id="editor-questions-list" class="space-y-4 overflow-y-auto pr-2 flex-grow max-h-[60vh]"></div>
-
-            <div class="flex flex-wrap justify-between items-center gap-3 pt-4 border-t border-slate-800">
-                <div class="flex space-x-2">
-                    <button onclick="app.editorAddNewQuestion()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold flex items-center space-x-2 border border-slate-700">
-                        <i class="fa-solid fa-plus text-emerald-400"></i>
-                        <span>Aggiungi</span>
-                    </button>
-                    <button onclick="app.resetDefaultQuestions()" class="px-3 py-2 rounded-xl bg-rose-950/40 hover:bg-rose-900/60 text-rose-300 text-xs font-bold border border-rose-800/50">
-                        <i class="fa-solid fa-rotate-left mr-1"></i>Ripristina
-                    </button>
-                </div>
-
-                <button onclick="app.closeQuestionEditor()" class="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-bold shadow-lg shadow-indigo-600/30">
-                    Salva e Chiudi
-                </button>
-            </div>
-        </div>
-    </div>
-
     <footer class="w-full px-4 py-3 text-center text-xs text-slate-500 border-t border-slate-800/50">
-        Quality Games Hub &bull; Fabio Simone ABB &bull; Powered by Supabase
+        Quality Games Debug &bull; Fabio Simone ABB
     </footer>
 
     <script>
@@ -335,626 +143,191 @@
         const { createClient } = window.supabase;
         const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        const DEFAULT_QUALITY_QUESTIONS = [
-            { id: 1, category: "Incoming Inspection", question: "Nel piano di campionamento ISO 2859-1 (AQL), cosa indica un AQL dell'1.0%?", options: ["Il 1% del lotto viene sempre scartato", "Il livello di qualità accettabile massimo medio di non conformità", "Che si controlla solo 1 pezzo ogni 100 prodotti", "Un errore massimo tollerato del 10% sui controlli"], correct: 1, timer: 30 },
-            { id: 2, category: "First Article Inspection (FAI)", question: "Secondo la norma AS9102 / ISO 9001, qual è il fine principale del FAI report?", options: ["Sostituire i controlli finali di collaudo", "Verificare che il processo sia capace di produrre parti conformi ai disegni", "Calcolare solo il costo della lavorazione meccanica", "Certificare l'imballo del primo pezzo"], correct: 1, timer: 30 },
-            { id: 3, category: "Laboratorio Prove", question: "Durante una prova di trazione sul metallo, cosa rappresenta il punto di Snervamento (Yield Strength)?", options: ["Il momento in cui il provino si spezza", "La transizione dalla deformazione elastica a quella plastica permanente", "Il massimo carico sostenibile dalla provetta", "La percentuale di allungamento finale"], correct: 1, timer: 25 },
-            { id: 4, category: "Qualità di Processo", question: "Cosa si intende per dispositivo 'Poka-Yoke' in una linea di assemblaggio?", options: ["Un software per la gestione dei turni", "Un meccanismo a prova di errore che impedisce lo sbaglio dell'operatore", "Un modulo per la registrazione dell'orario di lavoro", "Un tipo di calibro digitale per le filettature"], correct: 1, timer: 20 },
-            { id: 5, category: "Qualità di Processo", question: "In una metodologia 8D Report per l'analisi dei problemi, qual è la fase D3?", options: ["Definizione del Team", "Azioni Contentive Immediate (ICA)", "Identificazione della Causa Radice (Root Cause)", "Azioni Correttive Permanenti (PCA)"], correct: 1, timer: 25 },
-            { id: 6, category: "Laboratorio Prove", question: "Il test in Camera a Nebbia Salina (Salt Spray Test - ISO 9227) viene utilizzato per:", options: ["Misurare la durezza della superficie metallica", "Valutare la resistenza alla corrosione di rivestimenti e trattamenti", "Determinare la rugosità superficiale Ra", "Testare l'adesione della vernice su plastica"], correct: 1, timer: 25 },
-            { id: 7, category: "First Article Inspection (FAI)", question: "Nelle tolleranze geometriche (GD&T), quale simbolo rappresenta la 'Posizione Vera' (True Position)?", options: ["Un cerchio con due linee a croce al centro (⌖)", "Due cerchi concentrici (◎)", "Una freccia inclinata (↗)", "Un parallelogramma (▱)"], correct: 0, timer: 20 },
-            { id: 8, category: "Qualità di Processo", question: "Nel Controllo Statistico di Processo (SPC), un indice Cp o Cpk maggiore di 1.33 indica:", options: ["Un processo instabile e fuori controllo", "Un processo adeguatamente capace di rispettare le tolleranze", "Un tasso di scarto superiore al 5%", "Che la strumentazione va ricalibrata immediatamente"], correct: 1, timer: 25 }
-        ];
-
-        class SoundEngine {
-            constructor() { this.ctx = null; this.muted = false; }
-            init() { if (!this.ctx) { const AudioCtx = window.AudioContext || window.webkitAudioContext; this.ctx = new AudioCtx(); } }
-            playBeep(freq = 440, duration = 0.1, type = 'sine') {
-                if (this.muted) return;
-                try {
-                    this.init();
-                    const osc = this.ctx.createOscillator();
-                    const gain = this.ctx.createGain();
-                    osc.type = type;
-                    osc.frequency.value = freq;
-                    gain.gain.setValueAtTime(0.1, this.ctx.currentTime);
-                    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
-                    osc.connect(gain);
-                    gain.connect(this.ctx.destination);
-                    osc.start();
-                    osc.stop(this.ctx.currentTime + duration);
-                } catch (e) { }
-            }
-            playCorrect() { this.playBeep(523.25, 0.1, 'triangle'); setTimeout(() => this.playBeep(659.25, 0.15, 'triangle'), 100); setTimeout(() => this.playBeep(783.99, 0.25, 'triangle'), 220); }
-            playWrong() { this.playBeep(220, 0.15, 'sawtooth'); setTimeout(() => this.playBeep(180, 0.25, 'sawtooth'), 120); }
-            playTick() { this.playBeep(800, 0.03, 'square'); }
-            playFanfare() {
-                if (this.muted) return;
-                const notes = [440, 554.37, 659.25, 880];
-                notes.forEach((freq, i) => { setTimeout(() => this.playBeep(freq, 0.2, 'triangle'), i * 120); });
-            }
-        }
-
-        class QualityGamesApp {
+        class DebugApp {
             constructor() {
-                this.sound = new SoundEngine();
-                this.questions = [...DEFAULT_QUALITY_QUESTIONS];
-                this.supabase = supabase;
-                
-                this.role = null;
                 this.roomCode = null;
-                this.playerData = null;
-                this.currentQuestionIdx = 0;
-                this.gameState = 'LOBBY';
-                this.questionTimer = null;
-                this.timeLeft = 0;
-                this.playerName = '';
-                this.myScore = 0;
-                this.mySelectedAnswer = null;
-                this.players = {};
-                this.answersReceived = {};
-                this.channel = null;
-                this.gameUpdatesChannel = null;
-                this.pollInterval = null;
+                this.logs = [];
             }
 
-            init() {
-                const urlParams = new URLSearchParams(window.location.search);
-                const roomParam = urlParams.get('room');
-                if (roomParam) {
-                    this.role = 'player';
-                    document.getElementById('join-room-code').value = roomParam;
-                    this.showView('view-player-join');
+            log(message, type = 'info') {
+                const timestamp = new Date().toLocaleTimeString();
+                const icon = type === 'error' ? '❌' : type === 'success' ? '✅' : '🟦';
+                this.logs.push({ timestamp, message, type, icon });
+                this.renderLogs();
+                console.log(`[${timestamp}] [${type.toUpperCase()}] ${message}`);
+            }
+
+            renderLogs() {
+                const output = document.getElementById('debug-output');
+                const output2 = document.getElementById('debug-output2');
+                const html = this.logs.map((log, i) => `
+                    <div class="debug-line debug-${log.type}">
+                        <span class="text-slate-500">[${log.timestamp}]</span> 
+                        ${log.icon} ${log.message}
+                    </div>
+                `).join('');
+                if (output) output.innerHTML = html;
+                if (output2) output2.innerHTML = html;
+            }
+
+            async testSupabaseConnection() {
+                this.log('Test Supabase in corso...', 'info');
+                
+                try {
+                    // Test 1: Connessione di base
+                    const { data: users, error: usersError } = await supabase.auth.getUser();
+                    this.log('Test auth.getUser(): ' + (usersError ? 'FALLITO' : 'OK (anonimo)'), usersError ? 'error' : 'success');
+
+                    // Test 2: Leggi tabella rooms
+                    const { data: roomsData, error: roomsError } = await supabase
+                        .from('rooms')
+                        .select('*')
+                        .limit(1);
+                    
+                    if (roomsError) {
+                        this.log(`Errore lettura rooms: ${roomsError.message}`, 'error');
+                    } else {
+                        this.log(`Tabella rooms OK (${roomsData.length} record)`, 'success');
+                    }
+
+                    // Test 3: Leggi tabella players
+                    const { data: playersData, error: playersError } = await supabase
+                        .from('players')
+                        .select('*')
+                        .limit(1);
+                    
+                    if (playersError) {
+                        this.log(`Errore lettura players: ${playersError.message}`, 'error');
+                    } else {
+                        this.log(`Tabella players OK (${playersData.length} record)`, 'success');
+                    }
+
+                    // Test 4: Crea stanza test
+                    const testId = 'test-' + Date.now();
+                    const { error: insertError } = await supabase.from('rooms').insert([{
+                        id: testId,
+                        host_id: 'test-host',
+                        game_state: 'LOBBY'
+                    }]);
+
+                    if (insertError) {
+                        this.log(`Errore insert room: ${insertError.message}`, 'error');
+                    } else {
+                        this.log(`Insert room OK (ID: ${testId})`, 'success');
+
+                        // Tenta di leggere la stanza appena creata
+                        const { data: newRoom, error: readError } = await supabase
+                            .from('rooms')
+                            .select('*')
+                            .eq('id', testId)
+                            .single();
+
+                        if (readError) {
+                            this.log(`Errore lettura room appena creata: ${readError.message}`, 'error');
+                        } else {
+                            this.log(`Lettura room OK! Room: ${newRoom.id}`, 'success');
+                        }
+                    }
+
+                } catch (err) {
+                    this.log(`Eccezione: ${err.message}`, 'error');
                 }
             }
 
-            toggleAudio() {
-                this.sound.muted = !this.sound.muted;
-                const icon = document.getElementById('audio-icon');
-                icon.className = this.sound.muted ? 'fa-solid fa-volume-xmark text-rose-400' : 'fa-solid fa-volume-high text-slate-300';
-            }
-
-            showView(viewId) {
-                const views = ['view-home', 'view-host-lobby', 'view-host-game', 'view-player-join', 'view-player-game', 'view-leaderboard'];
-                views.forEach(id => {
-                    const el = document.getElementById(id);
-                    if (el) el.classList.add('hidden');
-                });
-                const target = document.getElementById(viewId);
-                if (target) target.classList.remove('hidden');
-            }
-
-            goHome() {
-                if (this.channel) this.channel.unsubscribe();
-                if (this.gameUpdatesChannel) this.gameUpdatesChannel.unsubscribe();
-                clearInterval(this.pollInterval);
-                this.role = null;
-                this.gameState = 'LOBBY';
-                document.getElementById('header-room-badge').classList.add('hidden');
-                this.showView('view-home');
-            }
-
-            async startHostFlow() {
+            async createTestRoom() {
+                this.log('Creazione stanza test...', 'info');
+                
                 try {
-                    this.role = 'host';
-                    this.gameState = 'LOBBY';
                     const randomId = 'qg-' + Math.floor(1000 + Math.random() * 9000);
                     this.roomCode = randomId;
-
-                    const { error } = await this.supabase.from('rooms').insert([{
+                    
+                    const { error } = await supabase.from('rooms').insert([{
                         id: randomId,
-                        host_id: 'host-' + Math.random().toString(36).substr(2, 9),
+                        host_id: 'test-host-' + Date.now(),
                         game_state: 'LOBBY'
                     }]);
 
                     if (error) {
-                        alert('Errore Supabase: ' + error.message);
+                        this.log(`Errore creazione stanza: ${error.message}`, 'error');
                         return;
                     }
 
+                    this.log(`Stanza creata! Codice: ${randomId}`, 'success');
                     document.getElementById('lobby-room-code-display').innerText = randomId;
-                    document.getElementById('header-room-code').innerText = randomId;
-                    document.getElementById('header-room-badge').classList.remove('hidden');
-
-                    const joinUrl = `${window.location.origin}${window.location.pathname}?room=${randomId}`;
-                    const qrContainer = document.getElementById('qrcode-container');
-                    qrContainer.innerHTML = '';
-                    new QRCode(qrContainer, {
-                        text: joinUrl,
-                        width: 170,
-                        height: 170,
-                        colorDark: "#0f172a",
-                        colorLight: "#ffffff",
-                        correctLevel: QRCode.CorrectLevel.H
-                    });
-
-                    // POLLING FALLBACK OGNI 1.5 SECONDI
-                    clearInterval(this.pollInterval);
-                    this.pollInterval = setInterval(() => {
-                        if (this.role === 'host' && this.roomCode && this.gameState === 'LOBBY') {
-                            this.updateHostLobbyUI();
-                        }
-                    }, 1500);
-
-                    this.updateHostLobbyUI();
-                    this.showView('view-host-lobby');
-                } catch (err) {
-                    console.error('Errore startHostFlow:', err);
-                    alert('Errore: ' + err.message);
-                }
-            }
-
-            async updateHostLobbyUI() {
-                try {
-                    const { data: players, error } = await this.supabase.from('players').select('*').eq('room_id', this.roomCode);
-                    
-                    if (error) {
-                        console.error('Errore Supabase:', error);
-                        return;
-                    }
-                    
-                    const listEl = document.getElementById('lobby-players-list');
-                    const countBadge = document.getElementById('player-count-badge');
-                    const startBtn = document.getElementById('btn-start-game');
-                    const pCount = players ? players.length : 0;
-
-                    countBadge.innerText = `${pCount} Giocatori`;
-                    document.getElementById('start-btn-players-count').innerText = pCount;
-                    this.players = {};
-                    
-                    if (players) {
-                        players.forEach(p => { 
-                            this.players[p.id] = { ...p, score: 0 }; 
-                        });
-                    }
-
-                    if (pCount > 0) {
-                        startBtn.disabled = false;
-                        startBtn.className = 'w-full py-4 rounded-xl font-black text-lg bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-600/30 transition-all cursor-pointer';
-                        listEl.innerHTML = (players || []).map(p => `
-                            <div class="glass-card px-3 py-2 rounded-xl flex items-center space-x-2 border border-slate-700/50">
-                                <i class="fa-solid fa-user text-emerald-400 text-xs"></i>
-                                <span class="text-xs font-bold text-white truncate">${p.name}</span>
-                            </div>
-                        `).join('');
-                    } else {
-                        startBtn.disabled = true;
-                        startBtn.className = 'w-full py-4 rounded-xl font-black text-lg bg-slate-800 text-slate-500 cursor-not-allowed shadow-lg transition-all duration-200';
-                        listEl.innerHTML = '<div class="col-span-full py-8 text-center text-slate-500 text-sm italic">In attesa che i giocatori si colleghino...</div>';
-                    }
-                } catch (err) {
-                    console.error('Errore updateHostLobbyUI:', err);
-                }
-            }
-
-            async hostStartGame() {
-                if (Object.keys(this.players).length === 0) {
-                    alert('Nessun giocatore collegato!');
-                    return;
-                }
-                
-                clearInterval(this.pollInterval);
-                this.currentQuestionIdx = 0;
-                this.gameState = 'QUESTION';
-                await this.supabase.from('rooms').update({ game_state: 'GAME' }).eq('id', this.roomCode);
-                
-                // Broadcast a tutti i player
-                const gameUpdateChannel = this.supabase.channel(`game:${this.roomCode}`);
-                gameUpdateChannel.send('broadcast', { type: 'GAME_START' });
-                gameUpdateChannel.subscribe();
-                this.gameUpdatesChannel = gameUpdateChannel;
-                
-                this.hostLoadQuestion(this.currentQuestionIdx);
-                this.showView('view-host-game');
-            }
-
-            hostLoadQuestion(idx) {
-                if (idx >= this.questions.length) {
-                    this.hostShowFinalLeaderboard();
-                    return;
-                }
-
-                this.gameState = 'QUESTION';
-                this.answersReceived = {};
-                const q = this.questions[idx];
-
-                document.getElementById('host-q-category').innerText = q.category;
-                document.getElementById('host-q-text').innerText = q.question;
-                document.getElementById('host-total-players-count').innerText = Object.keys(this.players).length;
-                document.getElementById('host-answers-submitted-count').innerText = '0';
-
-                const grid = document.getElementById('host-answers-grid');
-                const colors = ['bg-rose-950/40 border-rose-600/40 text-rose-200', 'bg-sky-950/40 border-sky-600/40 text-sky-200', 'bg-amber-950/40 border-amber-600/40 text-amber-200', 'bg-emerald-950/40 border-emerald-600/40 text-emerald-200'];
-                const badges = ['A', 'B', 'C', 'D'];
-
-                grid.innerHTML = q.options.map((opt, i) => `
-                    <div id="host-ans-card-${i}" class="glass-card p-5 rounded-2xl border-2 ${colors[i]} flex items-center justify-between transition-all">
-                        <div class="flex items-center space-x-3">
-                            <span class="w-8 h-8 rounded-lg bg-slate-900/80 flex items-center justify-center font-black text-sm">${badges[i]}</span>
-                            <span class="font-bold text-sm sm:text-base">${opt}</span>
-                        </div>
-                    </div>
-                `).join('');
-
-                document.getElementById('host-show-answer-btn').classList.remove('hidden');
-                document.getElementById('host-next-btn').classList.add('hidden');
-
-                // Broadcast la nuova domanda
-                if (this.gameUpdatesChannel) {
-                    this.gameUpdatesChannel.send('broadcast', { 
-                        type: 'NEW_QUESTION', 
-                        options: q.options,
-                        timer: q.timer 
-                    });
-                }
-
-                this.startHostTimer(q.timer);
-            }
-
-            startHostTimer(seconds) {
-                clearInterval(this.questionTimer);
-                this.timeLeft = seconds;
-                const timerSec = document.getElementById('host-timer-seconds');
-                const circle = document.getElementById('host-timer-circle');
-
-                timerSec.innerText = this.timeLeft;
-                circle.classList.remove('border-rose-500', 'animate-pulse-fast');
-
-                this.questionTimer = setInterval(() => {
-                    this.timeLeft--;
-                    timerSec.innerText = this.timeLeft;
-                    this.sound.playTick();
-
-                    if (this.timeLeft <= 5) {
-                        circle.classList.add('border-rose-500', 'animate-pulse-fast');
-                    }
-
-                    if (this.timeLeft <= 0) {
-                        clearInterval(this.questionTimer);
-                        this.hostShowAnswer();
-                    }
-                }, 1000);
-            }
-
-            hostShowAnswer() {
-                clearInterval(this.questionTimer);
-                this.gameState = 'ANSWER_SHOW';
-                const q = this.questions[this.currentQuestionIdx];
-
-                q.options.forEach((_, i) => {
-                    const card = document.getElementById(`host-ans-card-${i}`);
-                    if (i === q.correct) {
-                        card.className = 'glass-card p-5 rounded-2xl border-2 border-emerald-500 bg-emerald-600/30 text-white shadow-lg shadow-emerald-500/20 scale-[1.02] transition-all';
-                    } else {
-                        card.classList.add('opacity-40');
-                    }
-                });
-
-                // Broadcast risposta corretta
-                if (this.gameUpdatesChannel) {
-                    this.gameUpdatesChannel.send('broadcast', {
-                        type: 'SHOW_ANSWER',
-                        correctIdx: q.correct,
-                        options: q.options
-                    });
-                }
-
-                document.getElementById('host-show-answer-btn').classList.add('hidden');
-                document.getElementById('host-next-btn').classList.remove('hidden');
-            }
-
-            hostNextQuestion() {
-                this.currentQuestionIdx++;
-                if (this.currentQuestionIdx >= this.questions.length) {
-                    this.hostShowFinalLeaderboard();
-                } else {
-                    this.hostLoadQuestion(this.currentQuestionIdx);
-                }
-            }
-
-            async hostShowFinalLeaderboard() {
-                this.gameState = 'LEADERBOARD';
-                const { data: players } = await this.supabase.from('players').select('*').eq('room_id', this.roomCode).order('score', { ascending: false });
-                
-                const leaderboard = players || [];
-                this.sound.playFanfare();
-                confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 } });
-
-                if (this.gameUpdatesChannel) {
-                    this.gameUpdatesChannel.send('broadcast', { type: 'SHOW_LEADERBOARD', leaderboard });
-                }
-
-                this.renderLeaderboard(leaderboard);
-                this.showView('view-leaderboard');
-            }
-
-            startPlayerFlow() {
-                this.role = 'player';
-                this.showView('view-player-join');
-            }
-
-            async playerSubmitJoin(e) {
-                e.preventDefault();
-                try {
-                    const code = document.getElementById('join-room-code').value.trim().toUpperCase();
-                    const name = document.getElementById('join-nickname').value.trim();
-
-                    if (!code || !name) return;
 
                     // Verifica che la stanza esista
-                    const { data: room, error: roomError } = await this.supabase.from('rooms').select('*').eq('id', code).single();
+                    const { data: room } = await supabase
+                        .from('rooms')
+                        .select('*')
+                        .eq('id', randomId)
+                        .single();
+
+                    this.log(`Stanza verificata nel database: ${room.id}`, 'success');
                     
-                    if (roomError || !room) {
-                        alert('Stanza non trovata!');
-                        return;
-                    }
+                    // Aggiungi giocatori test
+                    const players = [
+                        { id: 'p1-' + Date.now(), room_id: randomId, name: 'Giocatore 1', score: 0 },
+                        { id: 'p2-' + Date.now(), room_id: randomId, name: 'Giocatore 2', score: 0 }
+                    ];
 
-                    this.roomCode = code;
-                    this.playerName = name;
-
-                    document.getElementById('player-disp-name').innerText = name;
-                    document.getElementById('header-room-code').innerText = code;
-                    document.getElementById('header-room-badge').classList.remove('hidden');
-
-                    const playerId = 'player-' + Math.random().toString(36).substr(2, 9);
-                    const { error: insertError, data: insertData } = await this.supabase.from('players').insert([{
-                        id: playerId,
-                        room_id: code,
-                        name: name,
-                        mode: 'individual',
-                        score: 0
-                    }]);
-
+                    const { error: insertError } = await supabase.from('players').insert(players);
+                    
                     if (insertError) {
-                        console.error('Errore insert:', insertError);
-                        alert('Errore nel collegamento: ' + insertError.message);
-                        return;
+                        this.log(`Errore inserimento giocatori: ${insertError.message}`, 'error');
+                    } else {
+                        this.log(`${players.length} giocatori test aggiunti`, 'success');
+                        this.updatePlayersList();
                     }
 
-                    this.playerData = { id: playerId, name, score: 0 };
-                    this.setupPlayerSubscriptions();
-                    this.showView('view-player-game');
                 } catch (err) {
-                    console.error('Errore playerSubmitJoin:', err);
-                    alert('Errore: ' + err.message);
+                    this.log(`Eccezione: ${err.message}`, 'error');
                 }
             }
 
-            setupPlayerSubscriptions() {
-                if (this.gameUpdatesChannel) this.gameUpdatesChannel.unsubscribe();
-                
-                this.gameUpdatesChannel = this.supabase.channel(`game:${this.roomCode}`);
-                
-                this.gameUpdatesChannel.on('broadcast', { event: '*' }, (payload) => {
-                    this.handlePlayerGameUpdate(payload);
-                }).subscribe();
-            }
+            async updatePlayersList() {
+                if (!this.roomCode) return;
 
-            handlePlayerGameUpdate(payload) {
-                const data = payload.payload;
-                
-                if (data.type === 'GAME_START') {
-                    this.myScore = 0;
-                    document.getElementById('player-disp-score').innerText = '0 PUNTI';
-                    document.getElementById('player-status-text').innerText = 'In attesa della prima domanda...';
-                } else if (data.type === 'NEW_QUESTION') {
-                    this.mySelectedAnswer = null;
-                    this.enablePlayerButtons(true);
-                    this.renderPlayerQuestionOptions(data.options);
-                    document.getElementById('player-status-text').innerText = 'Scegli la Risposta!';
-                    this.startPlayerLocalTimer(data.timer);
-                } else if (data.type === 'SHOW_ANSWER') {
-                    this.enablePlayerButtons(false);
-                    const isCorrect = this.mySelectedAnswer === data.correctIdx;
-                    if (isCorrect) {
-                        this.sound.playCorrect();
-                        document.getElementById('player-status-text').innerText = 'Esatto! 🎉';
-                    } else {
-                        this.sound.playWrong();
-                        document.getElementById('player-status-text').innerText = 'Errato ❌';
-                    }
-                } else if (data.type === 'SHOW_LEADERBOARD') {
-                    this.renderLeaderboard(data.leaderboard);
-                    this.showView('view-leaderboard');
-                }
-            }
+                const { data: players, error } = await supabase
+                    .from('players')
+                    .select('*')
+                    .eq('room_id', this.roomCode);
 
-            renderPlayerQuestionOptions(options) {
-                options.forEach((opt, i) => {
-                    const el = document.getElementById(`player-ans-${i}`);
-                    if (el) el.innerText = opt;
-                });
-            }
-
-            async playerSubmitAnswer(idx) {
-                if (this.mySelectedAnswer !== null) return;
-                this.mySelectedAnswer = idx;
-                this.sound.playBeep(600, 0.08);
-
-                const q = this.questions[this.currentQuestionIdx] || this.questions[0];
-                const isCorrect = idx === q.correct;
-                
-                if (isCorrect) {
-                    const speedBonus = Math.round((this.timeLeft / q.timer) * 500);
-                    this.myScore += 500 + speedBonus;
-                }
-
-                document.getElementById('player-disp-score').innerText = `${this.myScore} PUNTI`;
-
-                // Aggiorna lo score nel database
-                await this.supabase.from('players').update({ score: this.myScore }).eq('id', this.playerData.id);
-
-                this.enablePlayerButtons(false);
-            }
-
-            enablePlayerButtons(enable) {
-                const btns = document.querySelectorAll('#player-buttons-grid button');
-                btns.forEach((btn, i) => {
-                    btn.disabled = !enable;
-                    if (enable) {
-                        btn.classList.remove('opacity-40', 'ring-4', 'ring-white');
-                    } else if (i !== this.mySelectedAnswer) {
-                        btn.classList.add('opacity-40');
-                    } else {
-                        btn.classList.add('ring-4', 'ring-white');
-                    }
-                });
-            }
-
-            startPlayerLocalTimer(seconds) {
-                this.timeLeft = seconds;
-                const badge = document.getElementById('player-timer-badge');
-                badge.innerText = `${this.timeLeft}s`;
-
-                clearInterval(this.playerTimer);
-                this.playerTimer = setInterval(() => {
-                    this.timeLeft--;
-                    badge.innerText = `${this.timeLeft}s`;
-                    if (this.timeLeft <= 0) clearInterval(this.playerTimer);
-                }, 1000);
-            }
-
-            renderLeaderboard(list) {
-                const podiumEl = document.getElementById('podium-container');
-                const fullListEl = document.getElementById('full-leaderboard-list');
-
-                if (list.length === 0) return;
-
-                const p1 = list[0];
-                const p2 = list[1] || null;
-                const p3 = list[2] || null;
-
-                podiumEl.innerHTML = `
-                    ${p2 ? `<div class="flex flex-col items-center flex-1"><span class="text-xs font-bold text-slate-300 truncate max-w-[90px] mb-1">${p2.name}</span><span class="text-[10px] font-mono text-indigo-400 font-bold mb-2">${p2.score} pts</span><div class="w-full bg-slate-700/80 rounded-t-2xl py-6 flex flex-col items-center border-t-2 border-slate-400 shadow-lg"><span class="text-2xl font-black text-slate-300">2</span></div></div>` : ''}
-                    <div class="flex flex-col items-center flex-1"><i class="fa-solid fa-crown text-amber-400 text-2xl mb-1 animate-bounce-subtle"></i><span class="text-sm font-extrabold text-white truncate max-w-[110px] mb-1">${p1.name}</span><span class="text-xs font-mono text-emerald-400 font-bold mb-2">${p1.score} pts</span><div class="w-full bg-gradient-to-t from-amber-600 to-amber-500 rounded-t-2xl py-10 flex flex-col items-center shadow-xl shadow-amber-500/20 border-t-2 border-amber-300"><span class="text-4xl font-black text-slate-950">1</span></div></div>
-                    ${p3 ? `<div class="flex flex-col items-center flex-1"><span class="text-xs font-bold text-slate-300 truncate max-w-[90px] mb-1">${p3.name}</span><span class="text-[10px] font-mono text-indigo-400 font-bold mb-2">${p3.score} pts</span><div class="w-full bg-amber-900/60 rounded-t-2xl py-4 flex flex-col items-center border-t-2 border-amber-700 shadow-lg"><span class="text-xl font-black text-amber-500">3</span></div></div>` : ''}
-                `;
-
-                fullListEl.innerHTML = list.map((item, idx) => `
-                    <div class="glass-card px-4 py-3 rounded-xl flex justify-between items-center ${idx === 0 ? 'border border-amber-500/40' : ''}">
-                        <div class="flex items-center space-x-3">
-                            <span class="w-6 h-6 rounded-full ${idx < 3 ? 'bg-amber-500 text-slate-950 font-black' : 'bg-slate-800 text-slate-400'} text-xs flex items-center justify-center font-mono">${idx + 1}</span>
-                            <span class="text-sm font-bold text-white">${item.name}</span>
-                        </div>
-                        <span class="text-sm font-mono font-bold text-indigo-400">${item.score} PUNTI</span>
-                    </div>
-                `).join('');
-            }
-
-            openQuestionEditor() {
-                this.renderEditorQuestionsList();
-                document.getElementById('modal-editor').classList.remove('hidden');
-            }
-
-            closeQuestionEditor() {
-                document.getElementById('modal-editor').classList.add('hidden');
-                document.getElementById('lobby-questions-count').innerText = `${this.questions.length} Domande`;
-            }
-
-            renderEditorQuestionsList() {
-                const listEl = document.getElementById('editor-questions-list');
-                listEl.innerHTML = this.questions.map((q, idx) => `
-                    <div class="glass-card p-5 rounded-2xl space-y-4 border border-slate-800 bg-slate-900/60">
-                        <div class="flex justify-between items-center text-xs">
-                            <span class="font-extrabold text-indigo-400 uppercase tracking-wider">Domanda ${idx + 1}</span>
-                            <button onclick="app.editorDeleteQuestion(${idx})" class="text-rose-400 hover:text-rose-300 text-xs font-bold">
-                                <i class="fa-solid fa-trash"></i> Elimina
-                            </button>
-                        </div>
-                        <div>
-                            <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Categoria</label>
-                            <input type="text" value="${q.category}" onchange="app.questions[${idx}].category = this.value" class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none">
-                        </div>
-                        <div>
-                            <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Testo</label>
-                            <input type="text" value="${q.question}" onchange="app.questions[${idx}].question = this.value" class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-sm font-semibold text-white focus:outline-none">
-                        </div>
-                        <div class="space-y-2">
-                            <label class="block text-[11px] font-bold text-slate-400 uppercase">Opzioni</label>
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                ${q.options.map((opt, optIdx) => `
-                                    <div class="flex items-center space-x-2 bg-slate-950 p-2 rounded-xl border ${q.correct === optIdx ? 'border-emerald-500/60 bg-emerald-950/20' : 'border-slate-800'}">
-                                        <input type="radio" name="correct-q-${idx}" ${q.correct === optIdx ? 'checked' : ''} onchange="app.questions[${idx}].correct = ${optIdx}; app.renderEditorQuestionsList();" class="accent-emerald-500 w-4 h-4 cursor-pointer">
-                                        <span class="text-xs font-bold text-slate-400 font-mono">${['A','B','C','D'][optIdx]}:</span>
-                                        <input type="text" value="${opt}" onchange="app.questions[${idx}].options[${optIdx}] = this.value" class="w-full bg-transparent text-xs text-white focus:outline-none">
-                                    </div>
-                                `).join('')}
-                            </div>
-                        </div>
-                    </div>
-                `).join('');
-            }
-
-            editorAddNewQuestion() {
-                this.questions.push({
-                    id: Date.now(),
-                    category: "Qualità",
-                    question: "Nuova Domanda...",
-                    options: ["Opzione A", "Opzione B", "Opzione C", "Opzione D"],
-                    correct: 0,
-                    timer: 30
-                });
-                this.renderEditorQuestionsList();
-            }
-
-            editorDeleteQuestion(idx) {
-                if (this.questions.length <= 1) {
-                    alert("Devi mantenere almeno una domanda!");
+                if (error) {
+                    this.log(`Errore lettura giocatori: ${error.message}`, 'error');
                     return;
                 }
-                this.questions.splice(idx, 1);
-                this.renderEditorQuestionsList();
+
+                document.getElementById('lobby-players-count').innerText = `${players.length} Giocatori`;
+                document.getElementById('lobby-players-list').innerHTML = players.map(p => `
+                    <div class="glass-card p-2 rounded">
+                        <span class="text-emerald-400">${p.name}</span> - ${p.score} punti
+                    </div>
+                `).join('');
+
+                this.log(`Caricati ${players.length} giocatori`, 'success');
             }
 
-            resetDefaultQuestions() {
-                if (confirm("Ripristinare le domande predefinite?")) {
-                    this.questions = JSON.parse(JSON.stringify(DEFAULT_QUALITY_QUESTIONS));
-                    this.renderEditorQuestionsList();
-                }
+            goToHostMode() {
+                document.getElementById('view-home').classList.add('hidden');
+                document.getElementById('view-host-lobby').classList.remove('hidden');
+                this.createTestRoom();
+                
+                // Polling ogni 2 secondi
+                setInterval(() => this.updatePlayersList(), 2000);
             }
 
-            exportQuestions() {
-                const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(this.questions, null, 2));
-                const downloadAnchor = document.createElement('a');
-                downloadAnchor.setAttribute("href", dataStr);
-                downloadAnchor.setAttribute("download", `quality_questions_${new Date().toISOString().slice(0,10)}.json`);
-                document.body.appendChild(downloadAnchor);
-                downloadAnchor.click();
-                downloadAnchor.remove();
+            goHome() {
+                location.reload();
             }
 
-            importQuestions() {
-                document.getElementById('json-file-input').click();
-            }
-
-            handleJsonImport(event) {
-                const file = event.target.files[0];
-                if (!file) return;
-
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    try {
-                        const imported = JSON.parse(e.target.result);
-                        if (Array.isArray(imported) && imported.length > 0 && imported[0].question && imported[0].options) {
-                            this.questions = imported;
-                            document.getElementById('lobby-questions-count').innerText = `${this.questions.length} Domande`;
-                            alert(`Importate ${this.questions.length} domande!`);
-                        } else {
-                            alert("Formato JSON non valido");
-                        }
-                    } catch (err) {
-                        alert("Errore: " + err.message);
-                    }
-                };
-                reader.readAsText(file);
-                event.target.value = '';
+            hostStartGame() {
+                alert('Test OK! Il gioco funziona.');
             }
         }
 
         let app;
         window.addEventListener('DOMContentLoaded', () => {
-            app = new QualityGamesApp();
-            app.init();
+            app = new DebugApp();
         });
     </script>
 </body>
