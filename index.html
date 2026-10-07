@@ -14,7 +14,6 @@
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
-    
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.38.0"></script>
 
     <style>
@@ -204,7 +203,10 @@
                 <div class="text-sm text-slate-400 font-medium">
                     Risposte ricevute: <strong id="host-answers-submitted-count" class="text-indigo-400 text-lg">0</strong> / <span id="host-total-players-count">0</span>
                 </div>
-                <button id="host-next-btn" onclick="app.hostShowAnswer()" class="px-6 py-2.5 rounded-xl font-bold bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-600/30 transition-all">Mostra Risposta</button>
+                <div class="flex gap-2">
+                    <button id="host-show-answer-btn" onclick="app.hostShowAnswer()" class="px-4 py-2.5 rounded-xl font-bold bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-600/30 transition-all text-sm">Mostra Risposta</button>
+                    <button id="host-next-btn" onclick="app.hostNextQuestion()" class="px-6 py-2.5 rounded-xl font-bold bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-600/30 transition-all hidden">Prossima Domanda</button>
+                </div>
             </div>
         </section>
 
@@ -242,6 +244,10 @@
                     <div id="player-disp-score" class="text-xs text-indigo-400 font-mono font-bold">0 PUNTI</div>
                 </div>
                 <div id="player-timer-badge" class="px-3 py-1 rounded-full bg-slate-800 text-white font-mono font-black text-lg border border-slate-700">--s</div>
+            </div>
+
+            <div id="player-status-banner" class="glass-card p-4 rounded-2xl text-center">
+                <p id="player-status-text" class="text-sm font-bold text-slate-400">In Attesa dell'Host...</p>
             </div>
 
             <div id="player-buttons-grid" class="grid grid-cols-1 gap-3">
@@ -386,17 +392,15 @@
                 this.myScore = 0;
                 this.mySelectedAnswer = null;
                 this.players = {};
-                this.subscriptions = [];
-                this.pollInterval = null;
+                this.answersReceived = {};
+                this.channel = null;
+                this.gameUpdatesChannel = null;
             }
 
             init() {
-                // CHECK IF QR CODE REDIRECT
                 const urlParams = new URLSearchParams(window.location.search);
                 const roomParam = urlParams.get('room');
-                
                 if (roomParam) {
-                    // Vai direttamente alla pagina di join giocatore
                     this.role = 'player';
                     document.getElementById('join-room-code').value = roomParam;
                     this.showView('view-player-join');
@@ -420,11 +424,8 @@
             }
 
             goHome() {
-                clearInterval(this.pollInterval);
-                this.subscriptions.forEach(sub => {
-                    if (sub && sub.unsubscribe) sub.unsubscribe();
-                });
-                this.subscriptions = [];
+                if (this.channel) this.channel.unsubscribe();
+                if (this.gameUpdatesChannel) this.gameUpdatesChannel.unsubscribe();
                 this.role = null;
                 this.gameState = 'LOBBY';
                 document.getElementById('header-room-badge').classList.add('hidden');
@@ -441,7 +442,8 @@
                     const { error } = await this.supabase.from('rooms').insert([{
                         id: randomId,
                         host_id: 'host-' + Math.random().toString(36).substr(2, 9),
-                        game_state: 'LOBBY'
+                        game_state: 'LOBBY',
+                        current_question_idx: 0
                     }]);
 
                     if (error) {
@@ -465,16 +467,8 @@
                         correctLevel: QRCode.CorrectLevel.H
                     });
 
+                    this.setupHostSubscriptions();
                     this.updateHostLobbyUI();
-                    
-                    // POLLING OGNI 2 SECONDI per aggiornare la lista dei giocatori
-                    clearInterval(this.pollInterval);
-                    this.pollInterval = setInterval(() => {
-                        if (this.role === 'host' && this.roomCode) {
-                            this.updateHostLobbyUI();
-                        }
-                    }, 2000);
-
                     this.showView('view-host-lobby');
                 } catch (err) {
                     console.error('Errore startHostFlow:', err);
@@ -482,12 +476,27 @@
                 }
             }
 
+            setupHostSubscriptions() {
+                if (this.channel) this.channel.unsubscribe();
+                
+                this.channel = this.supabase.channel(`room:${this.roomCode}`);
+                
+                this.channel.on('postgres_changes', {
+                    event: '*',
+                    schema: 'public',
+                    table: 'players',
+                    filter: `room_id=eq.${this.roomCode}`
+                }, () => {
+                    this.updateHostLobbyUI();
+                }).subscribe();
+            }
+
             async updateHostLobbyUI() {
                 try {
                     const { data: players, error } = await this.supabase.from('players').select('*').eq('room_id', this.roomCode);
                     
                     if (error) {
-                        console.error('Errore lettura giocatori:', error);
+                        console.error('Errore:', error);
                         return;
                     }
                     
@@ -500,14 +509,16 @@
                     document.getElementById('start-btn-players-count').innerText = pCount;
                     this.players = {};
                     
-                    if (players && players.length > 0) {
+                    if (players) {
                         players.forEach(p => { 
                             this.players[p.id] = { ...p, score: 0 }; 
                         });
+                    }
 
+                    if (pCount > 0) {
                         startBtn.disabled = false;
                         startBtn.className = 'w-full py-4 rounded-xl font-black text-lg bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-600/30 transition-all cursor-pointer';
-                        listEl.innerHTML = players.map(p => `
+                        listEl.innerHTML = (players || []).map(p => `
                             <div class="glass-card px-3 py-2 rounded-xl flex items-center space-x-2 border border-slate-700/50">
                                 <i class="fa-solid fa-user text-emerald-400 text-xs"></i>
                                 <span class="text-xs font-bold text-white truncate">${p.name}</span>
@@ -528,9 +539,15 @@
                     alert('Nessun giocatore collegato!');
                     return;
                 }
-                clearInterval(this.pollInterval);
+                
                 this.currentQuestionIdx = 0;
                 await this.supabase.from('rooms').update({ game_state: 'GAME' }).eq('id', this.roomCode);
+                
+                // Broadcast a tutti i player
+                const gameUpdateChannel = this.supabase.channel(`game:${this.roomCode}`);
+                gameUpdateChannel.send('broadcast', { type: 'GAME_START' });
+                gameUpdateChannel.subscribe();
+                
                 this.hostLoadQuestion(this.currentQuestionIdx);
                 this.showView('view-host-game');
             }
@@ -542,6 +559,7 @@
                 }
 
                 this.gameState = 'QUESTION';
+                this.answersReceived = {};
                 const q = this.questions[idx];
 
                 document.getElementById('host-q-category').innerText = q.category;
@@ -561,6 +579,17 @@
                         </div>
                     </div>
                 `).join('');
+
+                document.getElementById('host-show-answer-btn').classList.remove('hidden');
+                document.getElementById('host-next-btn').classList.add('hidden');
+
+                // Broadcast la nuova domanda
+                const gameUpdateChannel = this.supabase.channel(`game:${this.roomCode}`);
+                gameUpdateChannel.send('broadcast', { 
+                    type: 'NEW_QUESTION', 
+                    options: q.options,
+                    timer: q.timer 
+                });
 
                 this.startHostTimer(q.timer);
             }
@@ -590,7 +619,7 @@
                 }, 1000);
             }
 
-            hostShowAnswer() {
+            async hostShowAnswer() {
                 clearInterval(this.questionTimer);
                 this.gameState = 'ANSWER_SHOW';
                 const q = this.questions[this.currentQuestionIdx];
@@ -604,16 +633,24 @@
                     }
                 });
 
-                const nextBtn = document.getElementById('host-next-btn');
-                if (this.currentQuestionIdx + 1 >= this.questions.length) {
-                    nextBtn.innerText = 'Mostra Podio Finale 🎉';
-                    nextBtn.onclick = () => this.hostShowFinalLeaderboard();
+                // Broadcast risposta corretta
+                const gameUpdateChannel = this.supabase.channel(`game:${this.roomCode}`);
+                gameUpdateChannel.send('broadcast', {
+                    type: 'SHOW_ANSWER',
+                    correctIdx: q.correct,
+                    options: q.options
+                });
+
+                document.getElementById('host-show-answer-btn').classList.add('hidden');
+                document.getElementById('host-next-btn').classList.remove('hidden');
+            }
+
+            hostNextQuestion() {
+                this.currentQuestionIdx++;
+                if (this.currentQuestionIdx >= this.questions.length) {
+                    this.hostShowFinalLeaderboard();
                 } else {
-                    nextBtn.innerText = 'Prossima Domanda ➡️';
-                    nextBtn.onclick = () => {
-                        this.currentQuestionIdx++;
-                        this.hostLoadQuestion(this.currentQuestionIdx);
-                    };
+                    this.hostLoadQuestion(this.currentQuestionIdx);
                 }
             }
 
@@ -624,6 +661,9 @@
                 const leaderboard = players || [];
                 this.sound.playFanfare();
                 confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 } });
+
+                const gameUpdateChannel = this.supabase.channel(`game:${this.roomCode}`);
+                gameUpdateChannel.send('broadcast', { type: 'SHOW_LEADERBOARD', leaderboard });
 
                 this.renderLeaderboard(leaderboard);
                 this.showView('view-leaderboard');
@@ -671,6 +711,7 @@
                     }
 
                     this.playerData = { id: playerId, name, score: 0 };
+                    this.setupPlayerSubscriptions();
                     this.showView('view-player-game');
                 } catch (err) {
                     console.error('Errore playerSubmitJoin:', err);
@@ -678,19 +719,70 @@
                 }
             }
 
+            setupPlayerSubscriptions() {
+                if (this.gameUpdatesChannel) this.gameUpdatesChannel.unsubscribe();
+                
+                this.gameUpdatesChannel = this.supabase.channel(`game:${this.roomCode}`);
+                
+                this.gameUpdatesChannel.on('broadcast', { event: '*' }, (payload) => {
+                    this.handlePlayerGameUpdate(payload);
+                }).subscribe();
+            }
+
+            handlePlayerGameUpdate(payload) {
+                const data = payload.payload;
+                
+                if (data.type === 'GAME_START') {
+                    this.myScore = 0;
+                    document.getElementById('player-disp-score').innerText = '0 PUNTI';
+                    document.getElementById('player-status-text').innerText = 'In attesa della prima domanda...';
+                } else if (data.type === 'NEW_QUESTION') {
+                    this.mySelectedAnswer = null;
+                    this.enablePlayerButtons(true);
+                    this.renderPlayerQuestionOptions(data.options);
+                    document.getElementById('player-status-text').innerText = 'Scegli la Risposta!';
+                    this.startPlayerLocalTimer(data.timer);
+                } else if (data.type === 'SHOW_ANSWER') {
+                    this.enablePlayerButtons(false);
+                    const isCorrect = this.mySelectedAnswer === data.correctIdx;
+                    if (isCorrect) {
+                        this.sound.playCorrect();
+                        document.getElementById('player-status-text').innerText = 'Esatto! 🎉';
+                    } else {
+                        this.sound.playWrong();
+                        document.getElementById('player-status-text').innerText = 'Errato ❌ Risposta: ' + data.options[data.correctIdx];
+                    }
+                } else if (data.type === 'SHOW_LEADERBOARD') {
+                    this.renderLeaderboard(data.leaderboard);
+                    this.showView('view-leaderboard');
+                }
+            }
+
+            renderPlayerQuestionOptions(options) {
+                options.forEach((opt, i) => {
+                    const el = document.getElementById(`player-ans-${i}`);
+                    if (el) el.innerText = opt;
+                });
+            }
+
             async playerSubmitAnswer(idx) {
                 if (this.mySelectedAnswer !== null) return;
                 this.mySelectedAnswer = idx;
                 this.sound.playBeep(600, 0.08);
 
-                const answerId = 'ans-' + Math.random().toString(36).substr(2, 9);
-                await this.supabase.from('answers').insert([{
-                    id: answerId,
-                    room_id: this.roomCode,
-                    player_id: this.playerData.id,
-                    answer_idx: idx,
-                    time_left: this.timeLeft || 15
-                }]);
+                const q = this.questions[this.currentQuestionIdx] || this.questions[0];
+                const isCorrect = idx === q.correct;
+                
+                if (isCorrect) {
+                    const speedBonus = Math.round((this.timeLeft / q.timer) * 500);
+                    this.myScore += 500 + speedBonus;
+                }
+
+                document.getElementById('player-disp-score').innerText = `${this.myScore} PUNTI`;
+                document.getElementById('player-status-text').innerText = 'Risposta inviata!';
+
+                // Aggiorna lo score nel database
+                await this.supabase.from('players').update({ score: this.myScore }).eq('id', this.playerData.id);
 
                 this.enablePlayerButtons(false);
             }
@@ -707,6 +799,19 @@
                         btn.classList.add('ring-4', 'ring-white');
                     }
                 });
+            }
+
+            startPlayerLocalTimer(seconds) {
+                this.timeLeft = seconds;
+                const badge = document.getElementById('player-timer-badge');
+                badge.innerText = `${this.timeLeft}s`;
+
+                clearInterval(this.playerTimer);
+                this.playerTimer = setInterval(() => {
+                    this.timeLeft--;
+                    badge.innerText = `${this.timeLeft}s`;
+                    if (this.timeLeft <= 0) clearInterval(this.playerTimer);
+                }, 1000);
             }
 
             renderLeaderboard(list) {
@@ -756,12 +861,14 @@
                                 <i class="fa-solid fa-trash"></i> Elimina
                             </button>
                         </div>
-
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Categoria</label>
+                            <input type="text" value="${q.category}" onchange="app.questions[${idx}].category = this.value" class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none">
+                        </div>
                         <div>
                             <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Testo</label>
                             <input type="text" value="${q.question}" onchange="app.questions[${idx}].question = this.value" class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-sm font-semibold text-white focus:outline-none">
                         </div>
-
                         <div class="space-y-2">
                             <label class="block text-[11px] font-bold text-slate-400 uppercase">Opzioni</label>
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -800,7 +907,7 @@
             }
 
             resetDefaultQuestions() {
-                if (confirm("Ripristinare le domande predefinite? Le tue modifiche andranno perse.")) {
+                if (confirm("Ripristinare le domande predefinite?")) {
                     this.questions = JSON.parse(JSON.stringify(DEFAULT_QUALITY_QUESTIONS));
                     this.renderEditorQuestionsList();
                 }
