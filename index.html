@@ -684,7 +684,11 @@
                 this.roomCode = randomId;
 
                 // Initialize Host Peer
-                this.peer = new Peer(this.roomCode);
+                this.peer = new Peer(this.roomCode, {
+                    iceServers: [
+                        { urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302'] }
+                    ]
+                });
 
                 this.peer.on('open', (id) => {
                     document.getElementById('lobby-room-code-display').innerText = id;
@@ -976,7 +980,11 @@
                 document.getElementById('header-room-badge').classList.remove('hidden');
 
                 // Connect to Host Peer via WebRTC
-                this.peer = new Peer();
+                this.peer = new Peer({
+                    iceServers: [
+                        { urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302'] }
+                    ]
+                });
 
                 this.peer.on('open', () => {
                     this.hostConn = this.peer.connect(this.roomCode);
