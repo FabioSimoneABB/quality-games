@@ -685,8 +685,11 @@
 
                 // Initialize Host Peer
                 this.peer = new Peer(this.roomCode, {
+                    host: 'peerjs-server.herokuapp.com',
+                    secure: true,
+                    port: 443,
                     iceServers: [
-                        { urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302'] }
+                        { urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302', 'stun:stun2.l.google.com:19302'] }
                     ]
                 });
 
@@ -981,8 +984,11 @@
 
                 // Connect to Host Peer via WebRTC
                 this.peer = new Peer({
+                    host: 'peerjs-server.herokuapp.com',
+                    secure: true,
+                    port: 443,
                     iceServers: [
-                        { urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302'] }
+                        { urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302', 'stun:stun2.l.google.com:19302'] }
                     ]
                 });
 
