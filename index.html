@@ -387,6 +387,20 @@
                 this.mySelectedAnswer = null;
                 this.players = {};
                 this.subscriptions = [];
+                this.pollInterval = null;
+            }
+
+            init() {
+                // CHECK IF QR CODE REDIRECT
+                const urlParams = new URLSearchParams(window.location.search);
+                const roomParam = urlParams.get('room');
+                
+                if (roomParam) {
+                    // Vai direttamente alla pagina di join giocatore
+                    this.role = 'player';
+                    document.getElementById('join-room-code').value = roomParam;
+                    this.showView('view-player-join');
+                }
             }
 
             toggleAudio() {
@@ -406,6 +420,7 @@
             }
 
             goHome() {
+                clearInterval(this.pollInterval);
                 this.subscriptions.forEach(sub => {
                     if (sub && sub.unsubscribe) sub.unsubscribe();
                 });
@@ -450,21 +465,16 @@
                         correctLevel: QRCode.CorrectLevel.H
                     });
 
-                    // Subscribe a cambiamenti dei giocatori - Supabase v2
-                    const channel = this.supabase.channel(`room:${randomId}`);
-                    
-                    channel.on('postgres_changes', {
-                        event: '*',
-                        schema: 'public',
-                        table: 'players',
-                        filter: `room_id=eq.${randomId}`
-                    }, payload => {
-                        this.updateHostLobbyUI();
-                    }).subscribe();
-
-                    this.subscriptions.push(channel);
-                    
                     this.updateHostLobbyUI();
+                    
+                    // POLLING OGNI 2 SECONDI per aggiornare la lista dei giocatori
+                    clearInterval(this.pollInterval);
+                    this.pollInterval = setInterval(() => {
+                        if (this.role === 'host' && this.roomCode) {
+                            this.updateHostLobbyUI();
+                        }
+                    }, 2000);
+
                     this.showView('view-host-lobby');
                 } catch (err) {
                     console.error('Errore startHostFlow:', err);
@@ -490,16 +500,14 @@
                     document.getElementById('start-btn-players-count').innerText = pCount;
                     this.players = {};
                     
-                    if (players) {
+                    if (players && players.length > 0) {
                         players.forEach(p => { 
                             this.players[p.id] = { ...p, score: 0 }; 
                         });
-                    }
 
-                    if (pCount > 0) {
                         startBtn.disabled = false;
                         startBtn.className = 'w-full py-4 rounded-xl font-black text-lg bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-600/30 transition-all cursor-pointer';
-                        listEl.innerHTML = (players || []).map(p => `
+                        listEl.innerHTML = players.map(p => `
                             <div class="glass-card px-3 py-2 rounded-xl flex items-center space-x-2 border border-slate-700/50">
                                 <i class="fa-solid fa-user text-emerald-400 text-xs"></i>
                                 <span class="text-xs font-bold text-white truncate">${p.name}</span>
@@ -520,6 +528,7 @@
                     alert('Nessun giocatore collegato!');
                     return;
                 }
+                clearInterval(this.pollInterval);
                 this.currentQuestionIdx = 0;
                 await this.supabase.from('rooms').update({ game_state: 'GAME' }).eq('id', this.roomCode);
                 this.hostLoadQuestion(this.currentQuestionIdx);
@@ -622,11 +631,6 @@
 
             startPlayerFlow() {
                 this.role = 'player';
-                const urlParams = new URLSearchParams(window.location.search);
-                const roomParam = urlParams.get('room');
-                if (roomParam) {
-                    document.getElementById('join-room-code').value = roomParam;
-                }
                 this.showView('view-player-join');
             }
 
@@ -843,6 +847,7 @@
         let app;
         window.addEventListener('DOMContentLoaded', () => {
             app = new QualityGamesApp();
+            app.init();
         });
     </script>
 </body>
