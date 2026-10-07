@@ -3,28 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Quality Games Hub - Real-Time PeerJS Team Challenge</title>
+    <title>Quality Games Hub - Real-Time Supabase Team Challenge</title>
     
-    <!-- PWA & Mobile Meta Tags -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#0f172a">
     
-    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- QRCode.js & PeerJS CDNs -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
-    
-    <!-- Canvas Confetti Library -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    
-    <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Supabase JS Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.38.0"></script>
 
     <style>
         body {
@@ -35,38 +27,31 @@
             -webkit-user-select: none;
             overflow-x: hidden;
         }
-
         .glass-panel {
             background: rgba(30, 41, 59, 0.75);
             backdrop-filter: blur(14px);
-            -webkit-backdrop-filter: blur(14px);
             border: 1px solid rgba(255, 255, 255, 0.12);
         }
-
         .glass-card {
             background: rgba(15, 23, 42, 0.6);
             border: 1px solid rgba(255, 255, 255, 0.08);
             transition: all 0.2s ease-in-out;
         }
-
         .glass-card:hover {
             border-color: rgba(99, 102, 241, 0.4);
             transform: translateY(-2px);
         }
-
         .gradient-text {
             background: linear-gradient(135deg, #38bdf8 0%, #818cf8 50%, #c084fc 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
-
         .btn-answer {
             transition: transform 0.1s ease, box-shadow 0.1s ease, filter 0.15s ease;
         }
         .btn-answer:active {
             transform: scale(0.95) !important;
         }
-
         @keyframes pulse-fast {
             0%, 100% { transform: scale(1); opacity: 1; }
             50% { transform: scale(1.08); opacity: 0.8; }
@@ -74,18 +59,6 @@
         .animate-pulse-fast {
             animation: pulse-fast 0.6s infinite ease-in-out;
         }
-
-        ::-webkit-scrollbar {
-            width: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: rgba(15, 23, 42, 0.5);
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #334155;
-            border-radius: 9999px;
-        }
-
         @keyframes bounce-subtle {
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-8px); }
@@ -120,24 +93,16 @@
     </header>
 
     <main class="flex-grow flex flex-col items-center justify-center p-4 sm:p-6 max-w-6xl w-full mx-auto">
-
-        <!-- VIEW 1: HOME SELECTION SCREEN -->
         <section id="view-home" class="w-full max-w-4xl space-y-8 py-4">
             <div class="text-center space-y-3">
                 <div class="inline-flex items-center px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold">
-                    <i class="fa-solid fa-wifi mr-1.5"></i> Connessione Diretta Attiva (Spero!)
+                    <i class="fa-solid fa-wifi mr-1.5"></i> Powered by Supabase Realtime
                 </div>
-                <h2 class="text-3xl sm:text-5xl font-extrabold text-white tracking-tight">
-                    Sfida il tuo <span class="gradient-text">Team Qualità</span>
-                </h2>
-                <p class="text-slate-400 max-w-xl mx-auto text-sm sm:text-base">
-                    Incoming Inspection, FAI, Laboratorio e Qualità di Processo. Collega gli smartphone della sala via QR Code e gioca in tempo reale!
-                </p>
+                <h2 class="text-3xl sm:text-5xl font-extrabold text-white tracking-tight">Sfida il tuo <span class="gradient-text">Team Qualità</span></h2>
+                <p class="text-slate-400 max-w-xl mx-auto text-sm sm:text-base">Incoming Inspection, FAI, Laboratorio e Qualità di Processo. Collega gli smartphone della sala via QR Code e gioca in tempo reale!</p>
             </div>
 
-            <!-- Mode Selection Cards -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
-                <!-- HOST CARD -->
                 <div onclick="app.startHostFlow()" class="glass-panel p-8 rounded-2xl cursor-pointer group hover:border-indigo-500/50 transition-all duration-300 flex flex-col justify-between space-y-6 relative overflow-hidden">
                     <div class="absolute -right-8 -bottom-8 w-32 h-32 bg-indigo-600/10 rounded-full blur-2xl group-hover:bg-indigo-600/20 transition-all"></div>
                     <div class="space-y-4">
@@ -145,17 +110,16 @@
                             <i class="fa-solid fa-desktop"></i>
                         </div>
                         <div>
-                            <h3 class="text-2xl font-bold text-white group-hover:text-indigo-400 transition-colors">Modalità HOST (Presenter)</h3>
-                            <p class="text-slate-400 text-sm mt-1">Crea una Stanza sul PC/Proiettore della sala. Genera il QR Code e controlla lo svolgimento della sfida.</p>
+                            <h3 class="text-2xl font-bold text-white group-hover:text-indigo-400 transition-colors">Modalità HOST</h3>
+                            <p class="text-slate-400 text-sm mt-1">Crea una Stanza e controlla lo svolgimento della sfida dal PC/Proiettore.</p>
                         </div>
                     </div>
                     <div class="flex items-center text-indigo-400 text-sm font-bold space-x-2">
-                        <span>Crea Nuova Stanza PeerJS</span>
+                        <span>Crea Nuova Stanza</span>
                         <i class="fa-solid fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
                     </div>
                 </div>
 
-                <!-- PLAYER CARD -->
                 <div onclick="app.startPlayerFlow()" class="glass-panel p-8 rounded-2xl cursor-pointer group hover:border-emerald-500/50 transition-all duration-300 flex flex-col justify-between space-y-6 relative overflow-hidden">
                     <div class="absolute -right-8 -bottom-8 w-32 h-32 bg-emerald-600/10 rounded-full blur-2xl group-hover:bg-emerald-600/20 transition-all"></div>
                     <div class="space-y-4">
@@ -164,7 +128,7 @@
                         </div>
                         <div>
                             <h3 class="text-2xl font-bold text-white group-hover:text-emerald-400 transition-colors">Modalità GIOCATORE</h3>
-                            <p class="text-slate-400 text-sm mt-1">Unisciti alla sfida dal tuo smartphone inquadrando il QR Code o inserendo il codice manuale.</p>
+                            <p class="text-slate-400 text-sm mt-1">Unisciti alla sfida inquadrando il QR Code o inserendo il codice manuale.</p>
                         </div>
                     </div>
                     <div class="flex items-center text-emerald-400 text-sm font-bold space-x-2">
@@ -173,43 +137,19 @@
                     </div>
                 </div>
             </div>
-
-            <!-- Pre-loaded Topics Pill Showcase -->
-            <div class="glass-card p-6 rounded-2xl text-center space-y-3">
-                <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400">Argomenti Inclusi nelle Domande Pre-Impostate</h4>
-                <div class="flex flex-wrap justify-center gap-2">
-                    <span class="px-3 py-1 rounded-lg bg-slate-800 text-xs font-medium text-slate-300 border border-slate-700/50"><i class="fa-solid fa-box-archive text-amber-400 mr-1.5"></i>Incoming Inspection (AQL)</span>
-                    <span class="px-3 py-1 rounded-lg bg-slate-800 text-xs font-medium text-slate-300 border border-slate-700/50"><i class="fa-solid fa-file-signature text-blue-400 mr-1.5"></i>First Article Inspection (FAI / GD&T)</span>
-                    <span class="px-3 py-1 rounded-lg bg-slate-800 text-xs font-medium text-slate-300 border border-slate-700/50"><i class="fa-solid fa-flask text-emerald-400 mr-1.5"></i>Laboratorio Prove (Trazione, Nebbia Salina)</span>
-                    <span class="px-3 py-1 rounded-lg bg-slate-800 text-xs font-medium text-slate-300 border border-slate-700/50"><i class="fa-solid fa-gears text-purple-400 mr-1.5"></i>Qualità di Processo (Poka-Yoke, 8D, SPC)</span>
-                </div>
-            </div>
         </section>
 
-        <!-- VIEW 2: HOST LOBBY & QR CODE DISPLAY -->
         <section id="view-host-lobby" class="hidden w-full max-w-4xl space-y-6">
             <div class="flex flex-col md:flex-row gap-6 items-stretch">
-                
-                <!-- Left Box: Room Info & Real QRCode.js Render Container -->
                 <div class="glass-panel p-6 rounded-2xl md:w-5/12 flex flex-col items-center justify-between text-center space-y-4">
                     <div>
-                        <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">Codice Stanza PeerJS</span>
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">Codice Stanza</span>
                         <div id="lobby-room-code-display" class="text-3xl sm:text-4xl font-black text-indigo-400 tracking-wider my-1 font-mono">Generazione...</div>
-                        <p class="text-xs text-slate-400">Inquadra il QR Code col telefono per connetterti alla stanza</p>
+                        <p class="text-xs text-slate-400">Inquadra il QR Code col telefono</p>
                     </div>
-
-                    <!-- Div target for QRCode.js rendering -->
-                    <div class="p-3 bg-white rounded-2xl shadow-xl flex items-center justify-center min-w-[190px] min-h-[190px]" id="qrcode-container">
-                        <!-- QRCode.js renders SVG/Canvas here -->
-                    </div>
-
-                    <div class="w-full text-[11px] text-slate-400 bg-slate-800/50 p-2.5 rounded-xl border border-slate-700/50 flex items-center justify-center space-x-2">
-                        <i class="fa-solid fa-link text-indigo-400"></i>
-                        <span class="truncate max-w-[220px]" id="room-direct-url">Inizializzazione...</span>
-                    </div>
+                    <div class="p-3 bg-white rounded-2xl shadow-xl flex items-center justify-center min-w-[190px] min-h-[190px]" id="qrcode-container"></div>
                 </div>
 
-                <!-- Right Box: Connected WebRTC Players & Controls -->
                 <div class="glass-panel p-6 rounded-2xl md:w-7/12 flex flex-col justify-between space-y-6">
                     <div>
                         <div class="flex justify-between items-center mb-4">
@@ -217,82 +157,40 @@
                                 <i class="fa-solid fa-users text-indigo-400"></i>
                                 <span>Partecipanti Collegati</span>
                             </h3>
-                            <span id="player-count-badge" class="px-3 py-1 rounded-full bg-indigo-600/30 text-indigo-300 font-extrabold text-sm border border-indigo-500/30">
-                                0 Giocatori
-                            </span>
+                            <span id="player-count-badge" class="px-3 py-1 rounded-full bg-indigo-600/30 text-indigo-300 font-extrabold text-sm border border-indigo-500/30">0 Giocatori</span>
                         </div>
-
-                        <!-- Joined Players Grid -->
                         <div id="lobby-players-list" class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 max-h-52 overflow-y-auto pr-1">
-                            <div class="col-span-full py-8 text-center text-slate-500 text-sm italic">
-                                In attesa che i giocatori inquadrino il QR Code o inseriscano il codice...
-                            </div>
+                            <div class="col-span-full py-8 text-center text-slate-500 text-sm italic">In attesa che i giocatori si colleghino...</div>
                         </div>
                     </div>
-
-                    <!-- Host Controls & Question Editor Trigger -->
-                    <div class="space-y-3 pt-4 border-t border-slate-800">
-                        <div class="flex justify-between items-center text-xs text-slate-400">
-                            <span>Set Domande: <strong id="lobby-questions-count" class="text-slate-200">8 Domande</strong></span>
-                            <div class="flex items-center space-x-2">
-                                <button onclick="app.exportQuestions()" class="text-emerald-400 hover:text-emerald-300 font-bold flex items-center space-x-1 px-2 py-1 bg-slate-800 rounded-lg">
-                                    <i class="fa-solid fa-download"></i>
-                                    <span>Esporta JSON</span>
-                                </button>
-                                <button onclick="app.importQuestions()" class="text-sky-400 hover:text-sky-300 font-bold flex items-center space-x-1 px-2 py-1 bg-slate-800 rounded-lg">
-                                    <i class="fa-solid fa-upload"></i>
-                                    <span>Importa JSON</span>
-                                </button>
-                                <input type="file" id="json-file-input" accept=".json" class="hidden" onchange="app.handleJsonImport(event)">
-                                <button onclick="app.openQuestionEditor()" class="text-indigo-400 hover:text-indigo-300 font-bold flex items-center space-x-1 px-2 py-1 bg-indigo-950/60 border border-indigo-500/30 rounded-lg">
-                                    <i class="fa-solid fa-pen-to-square"></i>
-                                    <span>Modifica Domande</span>
-                                </button>
-                            </div>
-                        </div>
-
-                        <button id="btn-start-game" onclick="app.hostStartGame()" disabled class="w-full py-4 rounded-xl font-black text-lg bg-slate-800 text-slate-500 cursor-not-allowed shadow-lg transition-all duration-200">
-                            Inizia il Gioco (<span id="start-btn-players-count">0</span> Pronti)
-                        </button>
-                    </div>
+                    <button id="btn-start-game" onclick="app.hostStartGame()" disabled class="w-full py-4 rounded-xl font-black text-lg bg-slate-800 text-slate-500 cursor-not-allowed shadow-lg transition-all duration-200">
+                        Inizia il Gioco (<span id="start-btn-players-count">0</span> Pronti)
+                    </button>
                 </div>
             </div>
         </section>
 
-        <!-- VIEW 3: HOST GAMEPLAY BOARD -->
         <section id="view-host-game" class="hidden w-full max-w-4xl space-y-6">
-            <div class="glass-panel p-6 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-4 relative overflow-hidden">
+            <div class="glass-panel p-6 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-4">
                 <div class="space-y-1 text-center md:text-left flex-grow">
-                    <span id="host-q-category" class="px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 text-xs font-bold border border-indigo-500/30 uppercase tracking-wider">
-                        Qualità
-                    </span>
-                    <h2 id="host-q-text" class="text-xl md:text-2xl font-extrabold text-white leading-snug mt-2">
-                        Testo della Domanda...
-                    </h2>
+                    <span id="host-q-category" class="px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 text-xs font-bold border border-indigo-500/30">Qualità</span>
+                    <h2 id="host-q-text" class="text-xl md:text-2xl font-extrabold text-white leading-snug mt-2">Testo della Domanda...</h2>
                 </div>
-
                 <div class="flex-shrink-0 flex flex-col items-center justify-center">
                     <div id="host-timer-circle" class="w-20 h-20 rounded-full border-4 border-indigo-500 flex items-center justify-center bg-slate-900/80 shadow-lg shadow-indigo-500/20">
                         <span id="host-timer-seconds" class="text-3xl font-black text-white">30</span>
                     </div>
                 </div>
             </div>
-
-            <div id="host-answers-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <!-- Dynamically rendered options -->
-            </div>
-
+            <div id="host-answers-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
             <div class="glass-panel p-4 rounded-2xl flex justify-between items-center">
                 <div class="text-sm text-slate-400 font-medium">
                     Risposte ricevute: <strong id="host-answers-submitted-count" class="text-indigo-400 text-lg">0</strong> / <span id="host-total-players-count">0</span>
                 </div>
-                <button id="host-next-btn" onclick="app.hostNextStep()" class="px-6 py-2.5 rounded-xl font-bold bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-600/30 transition-all">
-                    Mostra Risposta
-                </button>
+                <button id="host-next-btn" onclick="app.hostNextStep()" class="px-6 py-2.5 rounded-xl font-bold bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-600/30 transition-all">Mostra Risposta</button>
             </div>
         </section>
 
-        <!-- VIEW 4: PLAYER JOIN FORM -->
         <section id="view-player-join" class="hidden w-full max-w-md space-y-6">
             <div class="glass-panel p-8 rounded-3xl space-y-6 text-center border-t-4 border-emerald-500">
                 <div class="space-y-2">
@@ -300,283 +198,105 @@
                         <i class="fa-solid fa-gamepad"></i>
                     </div>
                     <h2 class="text-2xl font-black text-white">Unisciti alla Sfida</h2>
-                    <p class="text-xs text-slate-400">Inserisci il codice e scegli il tuo nome o squadra</p>
                 </div>
 
                 <form onsubmit="app.playerSubmitJoin(event)" class="space-y-4 text-left">
                     <div>
-                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Codice Stanza PeerJS</label>
+                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Codice Stanza</label>
                         <input type="text" id="join-room-code" required placeholder="Es. qg-8492" class="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white text-center text-xl tracking-wider font-mono focus:outline-none focus:border-emerald-500">
                     </div>
 
                     <div>
-                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Modalità Partecipazione</label>
-                        <div class="grid grid-cols-2 gap-2 p-1 bg-slate-900 rounded-xl border border-slate-800">
-                            <button type="button" id="btn-mode-ind" onclick="app.setJoinMode('individual')" class="py-2 rounded-lg text-xs font-bold bg-emerald-600 text-white transition-all">
-                                <i class="fa-solid fa-user mr-1"></i> Singolo
-                            </button>
-                            <button type="button" id="btn-mode-team" onclick="app.setJoinMode('team')" class="py-2 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition-all">
-                                <i class="fa-solid fa-users mr-1"></i> Squadra
-                            </button>
-                        </div>
+                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Il tuo Nome</label>
+                        <input type="text" id="join-nickname" required placeholder="Es. Mario" maxlength="20" class="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white focus:outline-none focus:border-emerald-500">
                     </div>
 
-                    <div>
-                        <label id="lbl-nickname" class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Il tuo Nome / Nickname</label>
-                        <input type="text" id="join-nickname" required placeholder="Es. Mario Qualità" maxlength="20" class="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white focus:outline-none focus:border-emerald-500">
-                        
-                        <div id="team-presets" class="hidden mt-2 grid grid-cols-2 gap-2">
-                            <button type="button" onclick="app.selectPresetTeam('Team Incoming')" class="py-1.5 px-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-[11px] text-slate-300 font-medium text-left truncate"><i class="fa-solid fa-box text-amber-400 mr-1"></i>Team Incoming</button>
-                            <button type="button" onclick="app.selectPresetTeam('Team FAI')" class="py-1.5 px-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-[11px] text-slate-300 font-medium text-left truncate"><i class="fa-solid fa-file-check text-blue-400 mr-1"></i>Team FAI</button>
-                            <button type="button" onclick="app.selectPresetTeam('Team Laboratorio')" class="py-1.5 px-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-[11px] text-slate-300 font-medium text-left truncate"><i class="fa-solid fa-flask text-emerald-400 mr-1"></i>Team Lab</button>
-                            <button type="button" onclick="app.selectPresetTeam('Team Processo')" class="py-1.5 px-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-[11px] text-slate-300 font-medium text-left truncate"><i class="fa-solid fa-gears text-purple-400 mr-1"></i>Team Processo</button>
-                        </div>
-                    </div>
-
-                    <button type="submit" id="btn-connect-peer" class="w-full py-4 rounded-xl font-black text-lg bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-500/20 hover:opacity-95 transition-all flex items-center justify-center space-x-2">
-                        <span>Connetti e Gioca</span>
+                    <button type="submit" class="w-full py-4 rounded-xl font-black text-lg bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-500/20 hover:opacity-95 transition-all">
+                        Connetti e Gioca
                     </button>
                 </form>
             </div>
         </section>
 
-        <!-- VIEW 5: PLAYER SMARTPHONE CONTROLLER -->
         <section id="view-player-game" class="hidden w-full max-w-md space-y-4">
             <div class="glass-panel p-4 rounded-2xl flex justify-between items-center">
                 <div class="flex items-center space-x-2">
-                    <div class="w-8 h-8 rounded-full bg-indigo-600/30 border border-indigo-500/30 flex items-center justify-center text-indigo-400 text-xs font-bold">
-                        <i class="fa-solid fa-user"></i>
-                    </div>
-                    <div>
-                        <div id="player-disp-name" class="text-sm font-bold text-white truncate max-w-[130px]">Giocatore</div>
-                        <div id="player-disp-score" class="text-xs text-indigo-400 font-mono font-bold">0 PUNTI</div>
-                    </div>
+                    <div id="player-disp-name" class="text-sm font-bold text-white">Giocatore</div>
+                    <div id="player-disp-score" class="text-xs text-indigo-400 font-mono font-bold">0 PUNTI</div>
                 </div>
-                <div id="player-timer-badge" class="px-3 py-1 rounded-full bg-slate-800 text-white font-mono font-black text-lg border border-slate-700">
-                    --s
-                </div>
-            </div>
-
-            <div id="player-status-banner" class="glass-card p-4 rounded-2xl text-center space-y-1">
-                <p id="player-status-title" class="text-sm font-bold text-white">In Attesa dell'Host...</p>
-                <p id="player-status-sub" class="text-xs text-slate-400">Sei connesso via WebRTC. Attendi l'avvio della domanda.</p>
+                <div id="player-timer-badge" class="px-3 py-1 rounded-full bg-slate-800 text-white font-mono font-black text-lg border border-slate-700">--s</div>
             </div>
 
             <div id="player-buttons-grid" class="grid grid-cols-1 gap-3">
-                <button onclick="app.playerSubmitAnswer(0)" class="btn-answer w-full p-5 rounded-2xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-left flex items-center space-x-4 shadow-lg shadow-rose-900/30">
+                <button onclick="app.playerSubmitAnswer(0)" class="btn-answer w-full p-5 rounded-2xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-left flex items-center space-x-4">
                     <span class="w-10 h-10 rounded-xl bg-black/20 flex items-center justify-center text-lg font-black flex-shrink-0">A</span>
-                    <span id="player-ans-0" class="text-base leading-tight">Opzione A</span>
+                    <span id="player-ans-0" class="text-base">Opzione A</span>
                 </button>
 
-                <button onclick="app.playerSubmitAnswer(1)" class="btn-answer w-full p-5 rounded-2xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-left flex items-center space-x-4 shadow-lg shadow-sky-900/30">
+                <button onclick="app.playerSubmitAnswer(1)" class="btn-answer w-full p-5 rounded-2xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-left flex items-center space-x-4">
                     <span class="w-10 h-10 rounded-xl bg-black/20 flex items-center justify-center text-lg font-black flex-shrink-0">B</span>
-                    <span id="player-ans-1" class="text-base leading-tight">Opzione B</span>
+                    <span id="player-ans-1" class="text-base">Opzione B</span>
                 </button>
 
-                <button onclick="app.playerSubmitAnswer(2)" class="btn-answer w-full p-5 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-left flex items-center space-x-4 shadow-lg shadow-amber-900/30">
+                <button onclick="app.playerSubmitAnswer(2)" class="btn-answer w-full p-5 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-left flex items-center space-x-4">
                     <span class="w-10 h-10 rounded-xl bg-black/10 flex items-center justify-center text-lg font-black flex-shrink-0">C</span>
-                    <span id="player-ans-2" class="text-base leading-tight">Opzione C</span>
+                    <span id="player-ans-2" class="text-base">Opzione C</span>
                 </button>
 
-                <button onclick="app.playerSubmitAnswer(3)" class="btn-answer w-full p-5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-left flex items-center space-x-4 shadow-lg shadow-emerald-900/30">
+                <button onclick="app.playerSubmitAnswer(3)" class="btn-answer w-full p-5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-left flex items-center space-x-4">
                     <span class="w-10 h-10 rounded-xl bg-black/20 flex items-center justify-center text-lg font-black flex-shrink-0">D</span>
-                    <span id="player-ans-3" class="text-base leading-tight">Opzione D</span>
+                    <span id="player-ans-3" class="text-base">Opzione D</span>
                 </button>
             </div>
         </section>
 
-        <!-- VIEW 6: FINAL PODIUM & LEADERBOARD -->
         <section id="view-leaderboard" class="hidden w-full max-w-4xl space-y-8 text-center py-4">
             <div class="space-y-2">
                 <span class="px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 text-xs font-bold border border-amber-500/30 uppercase tracking-widest">
                     <i class="fa-solid fa-trophy mr-1.5"></i>Classifica Finale
                 </span>
                 <h2 class="text-3xl sm:text-5xl font-black text-white">I Campioni della <span class="gradient-text">Qualità</span></h2>
-                <p class="text-slate-400 text-sm">Ecco i risultati completi elaborati in tempo reale</p>
             </div>
 
-            <div id="podium-container" class="flex justify-center items-end gap-3 sm:gap-6 pt-10 pb-4 max-w-xl mx-auto">
-                <!-- Dynamically populated 2nd, 1st, 3rd places -->
-            </div>
+            <div id="podium-container" class="flex justify-center items-end gap-3 sm:gap-6 pt-10 pb-4 max-w-xl mx-auto"></div>
 
             <div class="glass-panel p-6 rounded-2xl text-left max-w-2xl mx-auto">
                 <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4">Classifica Generale</h3>
-                <div id="full-leaderboard-list" class="space-y-2 max-h-64 overflow-y-auto pr-1">
-                    <!-- Dynamic leaderboard -->
-                </div>
+                <div id="full-leaderboard-list" class="space-y-2 max-h-64 overflow-y-auto pr-1"></div>
             </div>
 
-            <div class="flex justify-center gap-4">
-                <button onclick="app.goHome()" class="px-8 py-3.5 rounded-xl font-bold bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-600/30 transition-all">
-                    Torna al Menu Principale
-                </button>
-            </div>
+            <button onclick="app.goHome()" class="px-8 py-3.5 rounded-xl font-bold bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-600/30 transition-all">
+                Torna al Menu Principale
+            </button>
         </section>
     </main>
 
-    <!-- MODAL: Custom Question Set Editor -->
-    <div id="modal-editor" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
-        <div class="glass-panel w-full max-w-3xl rounded-3xl p-6 space-y-6 max-h-[90vh] flex flex-col justify-between border border-slate-700 shadow-2xl">
-            <div class="flex justify-between items-center border-b border-slate-800 pb-4">
-                <div>
-                    <h3 class="text-xl font-bold text-white flex items-center space-x-2">
-                        <i class="fa-solid fa-sliders text-indigo-400"></i>
-                        <span>Editor Avanzato Domande della Qualità</span>
-                    </h3>
-                    <p class="text-xs text-slate-400">Modifica testo, opzioni, risposta corretta e timer per ciascuna domanda</p>
-                </div>
-                <button onclick="app.closeQuestionEditor()" class="w-8 h-8 rounded-lg bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
-            </div>
-
-            <div id="editor-questions-list" class="space-y-4 overflow-y-auto pr-2 flex-grow max-h-[60vh]">
-                <!-- Populated dynamically by JS -->
-            </div>
-
-            <div class="flex flex-wrap justify-between items-center gap-3 pt-4 border-t border-slate-800">
-                <div class="flex space-x-2">
-                    <button onclick="app.editorAddNewQuestion()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold flex items-center space-x-2 border border-slate-700">
-                        <i class="fa-solid fa-plus text-emerald-400"></i>
-                        <span>Aggiungi Domanda</span>
-                    </button>
-                    <button onclick="app.resetDefaultQuestions()" class="px-3 py-2 rounded-xl bg-rose-950/40 hover:bg-rose-900/60 text-rose-300 text-xs font-bold border border-rose-800/50">
-                        <i class="fa-solid fa-rotate-left mr-1"></i>Ripristina Default
-                    </button>
-                </div>
-
-                <button onclick="app.closeQuestionEditor()" class="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-bold shadow-lg shadow-indigo-600/30">
-                    Salva e Chiudi
-                </button>
-            </div>
-        </div>
-    </div>
-
     <footer class="w-full px-4 py-3 text-center text-xs text-slate-500 border-t border-slate-800/50">
-        Quality Games Hub &bull; Fabio Simone ABB S.Palomba
+        Quality Games Hub &bull; Fabio Simone ABB &bull; Powered by Supabase
     </footer>
 
     <script>
+        // ===== CONFIGURAZIONE SUPABASE =====
+        const SUPABASE_URL = 'https://qcwlyupyscvgieewyifk.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_MkwR5br0dO-hVHVlfTtWsw_fQI7lDEB';
+        
+        const { createClient } = window.supabase;
+        const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
         const DEFAULT_QUALITY_QUESTIONS = [
-            {
-                id: 1,
-                category: "Incoming Inspection",
-                question: "Nel piano di campionamento ISO 2859-1 (AQL), cosa indica un AQL dell'1.0%?",
-                options: [
-                    "Il 1% del lotto viene sempre scartato",
-                    "Il livello di qualità accettabile massimo medio di non conformità",
-                    "Che si controlla solo 1 pezzo ogni 100 prodotti",
-                    "Un errore massimo tollerato del 10% sui controlli"
-                ],
-                correct: 1,
-                timer: 30
-            },
-            {
-                id: 2,
-                category: "First Article Inspection (FAI)",
-                question: "Secondo la norma AS9102 / ISO 9001, qual è il fine principale del FAI report?",
-                options: [
-                    "Sostituire i controlli finali di collaudo",
-                    "Verificare che il processo sia capace di produrre parti conformi ai disegni",
-                    "Calcolare solo il costo della lavorazione meccanica",
-                    "Certificare l'imballo del primo pezzo"
-                ],
-                correct: 1,
-                timer: 30
-            },
-            {
-                id: 3,
-                category: "Laboratorio Prove",
-                question: "Durante una prova di trazione sul metallo, cosa rappresenta il punto di Snervamento (Yield Strength)?",
-                options: [
-                    "Il momento in cui il provino si spezza",
-                    "La transizione dalla deformazione elastica a quella plastica permanente",
-                    "Il massimo carico sostenibile dalla provetta",
-                    "La percentuale di allungamento finale"
-                ],
-                correct: 1,
-                timer: 25
-            },
-            {
-                id: 4,
-                category: "Qualità di Processo",
-                question: "Cosa si intende per dispositivo 'Poka-Yoke' in una linea di assemblaggio?",
-                options: [
-                    "Un software per la gestione dei turni",
-                    "Un meccanismo a prova di errore che impedisce lo sbaglio dell'operatore",
-                    "Un modulo per la registrazione dell'orario di lavoro",
-                    "Un tipo di calibro digitale per le filettature"
-                ],
-                correct: 1,
-                timer: 20
-            },
-            {
-                id: 5,
-                category: "Qualità di Processo",
-                question: "In una metodologia 8D Report per l'analisi dei problemi, qual è la fase D3?",
-                options: [
-                    "Definizione del Team",
-                    "Azioni Contentive Immediate (ICA)",
-                    "Identificazione della Causa Radice (Root Cause)",
-                    "Azioni Correttive Permanenti (PCA)"
-                ],
-                correct: 1,
-                timer: 25
-            },
-            {
-                id: 6,
-                category: "Laboratorio Prove",
-                question: "Il test in Camera a Nebbia Salina (Salt Spray Test - ISO 9227) viene utilizzato per:",
-                options: [
-                    "Misurare la durezza della superficie metallica",
-                    "Valutare la resistenza alla corrosione di rivestimenti e trattamenti",
-                    "Determinare la rugosità superficiale Ra",
-                    "Testare l'adesione della vernice su plastica"
-                ],
-                correct: 1,
-                timer: 25
-            },
-            {
-                id: 7,
-                category: "First Article Inspection (FAI)",
-                question: "Nelle tolleranze geometriche (GD&T), quale simbolo rappresenta la 'Posizione Vera' (True Position)?",
-                options: [
-                    "Un cerchio con due linee a croce al centro (⌖)",
-                    "Due cerchi concentrici (◎)",
-                    "Una freccia inclinata (↗)",
-                    "Un parallelogramma (▱)"
-                ],
-                correct: 0,
-                timer: 20
-            },
-            {
-                id: 8,
-                category: "Qualità di Processo",
-                question: "Nel Controllo Statistico di Processo (SPC), un indice Cp o Cpk maggiore di 1.33 indica:",
-                options: [
-                    "Un processo instabile e fuori controllo",
-                    "Un processo adeguatamente capace di rispettare le tolleranze",
-                    "Un tasso di scarto superiore al 5%",
-                    "Che la strumentazione va ricalibrata immediatamente"
-                ],
-                correct: 1,
-                timer: 25
-            }
+            { id: 1, category: "Incoming Inspection", question: "Nel piano di campionamento ISO 2859-1 (AQL), cosa indica un AQL dell'1.0%?", options: ["Il 1% del lotto viene sempre scartato", "Il livello di qualità accettabile massimo medio di non conformità", "Che si controlla solo 1 pezzo ogni 100 prodotti", "Un errore massimo tollerato del 10% sui controlli"], correct: 1, timer: 30 },
+            { id: 2, category: "First Article Inspection (FAI)", question: "Secondo la norma AS9102 / ISO 9001, qual è il fine principale del FAI report?", options: ["Sostituire i controlli finali di collaudo", "Verificare che il processo sia capace di produrre parti conformi ai disegni", "Calcolare solo il costo della lavorazione meccanica", "Certificare l'imballo del primo pezzo"], correct: 1, timer: 30 },
+            { id: 3, category: "Laboratorio Prove", question: "Durante una prova di trazione sul metallo, cosa rappresenta il punto di Snervamento (Yield Strength)?", options: ["Il momento in cui il provino si spezza", "La transizione dalla deformazione elastica a quella plastica permanente", "Il massimo carico sostenibile dalla provetta", "La percentuale di allungamento finale"], correct: 1, timer: 25 },
+            { id: 4, category: "Qualità di Processo", question: "Cosa si intende per dispositivo 'Poka-Yoke' in una linea di assemblaggio?", options: ["Un software per la gestione dei turni", "Un meccanismo a prova di errore che impedisce lo sbaglio dell'operatore", "Un modulo per la registrazione dell'orario di lavoro", "Un tipo di calibro digitale per le filettature"], correct: 1, timer: 20 },
+            { id: 5, category: "Qualità di Processo", question: "In una metodologia 8D Report per l'analisi dei problemi, qual è la fase D3?", options: ["Definizione del Team", "Azioni Contentive Immediate (ICA)", "Identificazione della Causa Radice (Root Cause)", "Azioni Correttive Permanenti (PCA)"], correct: 1, timer: 25 },
+            { id: 6, category: "Laboratorio Prove", question: "Il test in Camera a Nebbia Salina (Salt Spray Test - ISO 9227) viene utilizzato per:", options: ["Misurare la durezza della superficie metallica", "Valutare la resistenza alla corrosione di rivestimenti e trattamenti", "Determinare la rugosità superficiale Ra", "Testare l'adesione della vernice su plastica"], correct: 1, timer: 25 },
+            { id: 7, category: "First Article Inspection (FAI)", question: "Nelle tolleranze geometriche (GD&T), quale simbolo rappresenta la 'Posizione Vera' (True Position)?", options: ["Un cerchio con due linee a croce al centro (⌖)", "Due cerchi concentrici (◎)", "Una freccia inclinata (↗)", "Un parallelogramma (▱)"], correct: 0, timer: 20 },
+            { id: 8, category: "Qualità di Processo", question: "Nel Controllo Statistico di Processo (SPC), un indice Cp o Cpk maggiore di 1.33 indica:", options: ["Un processo instabile e fuori controllo", "Un processo adeguatamente capace di rispettare le tolleranze", "Un tasso di scarto superiore al 5%", "Che la strumentazione va ricalibrata immediatamente"], correct: 1, timer: 25 }
         ];
 
         class SoundEngine {
-            constructor() {
-                this.ctx = null;
-                this.muted = false;
-            }
-
-            init() {
-                if (!this.ctx) {
-                    const AudioCtx = window.AudioContext || window.webkitAudioContext;
-                    this.ctx = new AudioCtx();
-                }
-            }
-
+            constructor() { this.ctx = null; this.muted = false; }
+            init() { if (!this.ctx) { const AudioCtx = window.AudioContext || window.webkitAudioContext; this.ctx = new AudioCtx(); } }
             playBeep(freq = 440, duration = 0.1, type = 'sine') {
                 if (this.muted) return;
                 try {
@@ -593,61 +313,36 @@
                     osc.stop(this.ctx.currentTime + duration);
                 } catch (e) { }
             }
-
-            playCorrect() {
-                this.playBeep(523.25, 0.1, 'triangle');
-                setTimeout(() => this.playBeep(659.25, 0.15, 'triangle'), 100);
-                setTimeout(() => this.playBeep(783.99, 0.25, 'triangle'), 220);
-            }
-
-            playWrong() {
-                this.playBeep(220, 0.15, 'sawtooth');
-                setTimeout(() => this.playBeep(180, 0.25, 'sawtooth'), 120);
-            }
-
-            playTick() {
-                this.playBeep(800, 0.03, 'square');
-            }
-
+            playCorrect() { this.playBeep(523.25, 0.1, 'triangle'); setTimeout(() => this.playBeep(659.25, 0.15, 'triangle'), 100); setTimeout(() => this.playBeep(783.99, 0.25, 'triangle'), 220); }
+            playWrong() { this.playBeep(220, 0.15, 'sawtooth'); setTimeout(() => this.playBeep(180, 0.25, 'sawtooth'), 120); }
+            playTick() { this.playBeep(800, 0.03, 'square'); }
             playFanfare() {
                 if (this.muted) return;
                 const notes = [440, 554.37, 659.25, 880];
-                notes.forEach((freq, i) => {
-                    setTimeout(() => this.playBeep(freq, 0.2, 'triangle'), i * 120);
-                });
+                notes.forEach((freq, i) => { setTimeout(() => this.playBeep(freq, 0.2, 'triangle'), i * 120); });
             }
         }
 
-        class PeerQualityApp {
+        class QualityGamesApp {
             constructor() {
                 this.sound = new SoundEngine();
                 this.questions = [...DEFAULT_QUALITY_QUESTIONS];
+                this.supabase = supabase;
                 
-                this.role = null; // 'host' or 'player'
-                this.peer = null;
-                this.hostConn = null; // Used by Player
-                this.playerConns = {}; // Used by Host: { connId: { conn, name, mode, score } }
-                
+                this.role = null;
                 this.roomCode = null;
-                this.mode = 'individual';
+                this.roomData = null;
+                this.playerData = null;
                 this.currentQuestionIdx = 0;
                 this.gameState = 'LOBBY';
                 this.questionTimer = null;
                 this.timeLeft = 0;
-                this.answersReceived = {}; // { connId: { answerIdx, timeLeft } }
-
                 this.playerName = '';
                 this.myScore = 0;
                 this.mySelectedAnswer = null;
-            }
-
-            init() {
-                const urlParams = new URLSearchParams(window.location.search);
-                const roomParam = urlParams.get('room');
-                if (roomParam) {
-                    this.startPlayerFlow();
-                    document.getElementById('join-room-code').value = roomParam;
-                }
+                this.players = {};
+                
+                this.subscriptions = [];
             }
 
             toggleAudio() {
@@ -667,134 +362,95 @@
             }
 
             goHome() {
-                if (this.peer) this.peer.destroy();
+                this.subscriptions.forEach(sub => sub.unsubscribe());
+                this.subscriptions = [];
                 this.role = null;
                 this.gameState = 'LOBBY';
                 document.getElementById('header-room-badge').classList.add('hidden');
                 this.showView('view-home');
             }
 
-            // --- HOST FLOW & WEBRTC SERVER ---
-            startHostFlow() {
+            // ===== HOST FLOW =====
+            async startHostFlow() {
                 this.role = 'host';
-                this.playerConns = {};
                 this.gameState = 'LOBBY';
-
                 const randomId = 'qg-' + Math.floor(1000 + Math.random() * 9000);
                 this.roomCode = randomId;
 
-                // Initialize Host Peer
-                this.peer = new Peer(this.roomCode, {
-                    host: 'peerjs-server.herokuapp.com',
-                    secure: true,
-                    port: 443,
-                    iceServers: [
-                        { urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302', 'stun:stun2.l.google.com:19302'] }
-                    ]
-                });
+                // Crea room in Supabase
+                const { error } = await this.supabase.from('rooms').insert([{
+                    id: randomId,
+                    host_id: 'host-' + Math.random().toString(36).substr(2, 9),
+                    game_state: 'LOBBY'
+                }]);
 
-                this.peer.on('open', (id) => {
-                    document.getElementById('lobby-room-code-display').innerText = id;
-                    document.getElementById('header-room-code').innerText = id;
-                    document.getElementById('header-room-badge').classList.remove('hidden');
-
-                    // Render QRCode using QRCode.js
-                    const joinUrl = `${window.location.origin}${window.location.pathname}?room=${id}`;
-                    document.getElementById('room-direct-url').innerText = joinUrl;
-
-                    const qrContainer = document.getElementById('qrcode-container');
-                    qrContainer.innerHTML = ''; // Clear container
-                    new QRCode(qrContainer, {
-                        text: joinUrl,
-                        width: 170,
-                        height: 170,
-                        colorDark: "#0f172a",
-                        colorLight: "#ffffff",
-                        correctLevel: QRCode.CorrectLevel.H
-                    });
-
-                    this.updateHostLobbyUI();
-                    this.showView('view-host-lobby');
-                });
-
-                this.peer.on('connection', (conn) => {
-                    conn.on('data', (data) => this.handleHostIncomingData(conn, data));
-                    conn.on('close', () => {
-                        delete this.playerConns[conn.peer];
-                        this.updateHostLobbyUI();
-                    });
-                });
-
-                this.peer.on('error', (err) => {
-                    console.error('PeerJS Host Error:', err);
-                    alert('Errore di connessione PeerJS: ' + err.type);
-                });
-            }
-
-            handleHostIncomingData(conn, data) {
-                if (data.type === 'PLAYER_JOIN') {
-                    this.playerConns[conn.peer] = {
-                        conn: conn,
-                        name: data.name,
-                        mode: data.mode,
-                        score: 0
-                    };
-                    this.updateHostLobbyUI();
-                    conn.send({ type: 'JOIN_ACCEPTED', roomCode: this.roomCode });
-                } else if (data.type === 'SUBMIT_ANSWER') {
-                    if (this.gameState === 'QUESTION') {
-                        this.answersReceived[conn.peer] = {
-                            answerIdx: data.answerIdx,
-                            timeLeft: data.timeLeft
-                        };
-                        this.updateHostAnswersCount();
-                    }
+                if (error) {
+                    alert('Errore: ' + error.message);
+                    return;
                 }
-            }
 
-            broadcastToPlayers(type, payload) {
-                Object.values(this.playerConns).forEach(p => {
-                    if (p.conn && p.conn.open) {
-                        p.conn.send({ type, ...payload });
-                    }
+                document.getElementById('lobby-room-code-display').innerText = randomId;
+                document.getElementById('header-room-code').innerText = randomId;
+                document.getElementById('header-room-badge').classList.remove('hidden');
+
+                const joinUrl = `${window.location.origin}${window.location.pathname}?room=${randomId}`;
+                const qrContainer = document.getElementById('qrcode-container');
+                qrContainer.innerHTML = '';
+                new QRCode(qrContainer, {
+                    text: joinUrl,
+                    width: 170,
+                    height: 170,
+                    colorDark: "#0f172a",
+                    colorLight: "#ffffff",
+                    correctLevel: QRCode.CorrectLevel.H
                 });
+
+                // Subscribe a cambiamenti dei giocatori
+                const sub = this.supabase
+                    .from(`players:room_id=eq.${randomId}`)
+                    .on('*', payload => {
+                        this.updateHostLobbyUI();
+                    })
+                    .subscribe();
+
+                this.subscriptions.push(sub);
+                this.updateHostLobbyUI();
+                this.showView('view-host-lobby');
             }
 
-            updateHostLobbyUI() {
+            async updateHostLobbyUI() {
+                const { data: players } = await this.supabase.from('players').select('*').eq('room_id', this.roomCode);
+                
                 const listEl = document.getElementById('lobby-players-list');
                 const countBadge = document.getElementById('player-count-badge');
                 const startBtn = document.getElementById('btn-start-game');
-                const pCount = Object.keys(this.playerConns).length;
+                const pCount = players ? players.length : 0;
 
                 countBadge.innerText = `${pCount} Giocatori`;
                 document.getElementById('start-btn-players-count').innerText = pCount;
-                document.getElementById('lobby-questions-count').innerText = `${this.questions.length} Domande`;
+                this.players = {};
+                players?.forEach(p => { this.players[p.id] = { ...p, score: 0 }; });
 
                 if (pCount > 0) {
                     startBtn.disabled = false;
                     startBtn.className = 'w-full py-4 rounded-xl font-black text-lg bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-600/30 transition-all cursor-pointer';
-                    
-                    listEl.innerHTML = Object.values(this.playerConns).map(p => `
+                    listEl.innerHTML = players.map(p => `
                         <div class="glass-card px-3 py-2 rounded-xl flex items-center space-x-2 border border-slate-700/50">
-                            <i class="fa-solid ${p.mode === 'team' ? 'fa-users text-indigo-400' : 'fa-user text-emerald-400'} text-xs"></i>
+                            <i class="fa-solid fa-user text-emerald-400 text-xs"></i>
                             <span class="text-xs font-bold text-white truncate">${p.name}</span>
                         </div>
                     `).join('');
                 } else {
                     startBtn.disabled = true;
                     startBtn.className = 'w-full py-4 rounded-xl font-black text-lg bg-slate-800 text-slate-500 cursor-not-allowed shadow-lg transition-all duration-200';
-                    listEl.innerHTML = `
-                        <div class="col-span-full py-8 text-center text-slate-500 text-sm italic">
-                            In attesa che i giocatori inquadrino il QR Code o inseriscano il codice...
-                        </div>
-                    `;
+                    listEl.innerHTML = '<div class="col-span-full py-8 text-center text-slate-500 text-sm italic">In attesa che i giocatori si colleghino...</div>';
                 }
             }
 
-            hostStartGame() {
-                if (Object.keys(this.playerConns).length === 0) return;
+            async hostStartGame() {
+                if (Object.keys(this.players).length === 0) return;
                 this.currentQuestionIdx = 0;
-                this.broadcastToPlayers('GAME_START', {});
+                await this.supabase.from('rooms').update({ game_state: 'GAME' }).eq('id', this.roomCode);
                 this.hostLoadQuestion(this.currentQuestionIdx);
                 this.showView('view-host-game');
             }
@@ -806,21 +462,14 @@
                 }
 
                 this.gameState = 'QUESTION';
-                this.answersReceived = {};
                 const q = this.questions[idx];
 
                 document.getElementById('host-q-category').innerText = q.category;
                 document.getElementById('host-q-text').innerText = q.question;
-                document.getElementById('host-total-players-count').innerText = Object.keys(this.playerConns).length;
-                this.updateHostAnswersCount();
+                document.getElementById('host-total-players-count').innerText = Object.keys(this.players).length;
 
                 const grid = document.getElementById('host-answers-grid');
-                const colors = [
-                    'bg-rose-950/40 border-rose-600/40 text-rose-200',
-                    'bg-sky-950/40 border-sky-600/40 text-sky-200',
-                    'bg-amber-950/40 border-amber-600/40 text-amber-200',
-                    'bg-emerald-950/40 border-emerald-600/40 text-emerald-200'
-                ];
+                const colors = ['bg-rose-950/40 border-rose-600/40 text-rose-200', 'bg-sky-950/40 border-sky-600/40 text-sky-200', 'bg-amber-950/40 border-amber-600/40 text-amber-200', 'bg-emerald-950/40 border-emerald-600/40 text-emerald-200'];
                 const badges = ['A', 'B', 'C', 'D'];
 
                 grid.innerHTML = q.options.map((opt, i) => `
@@ -834,11 +483,6 @@
 
                 document.getElementById('host-next-btn').innerText = 'Mostra Risposta';
                 document.getElementById('host-next-btn').onclick = () => this.hostShowAnswer();
-
-                this.broadcastToPlayers('NEW_QUESTION', {
-                    options: q.options,
-                    timer: q.timer
-                });
 
                 this.startHostTimer(q.timer);
             }
@@ -868,33 +512,10 @@
                 }, 1000);
             }
 
-            updateHostAnswersCount() {
-                const count = Object.keys(this.answersReceived).length;
-                document.getElementById('host-answers-submitted-count').innerText = count;
-                if (count >= Object.keys(this.playerConns).length && this.gameState === 'QUESTION') {
-                    clearInterval(this.questionTimer);
-                    this.hostShowAnswer();
-                }
-            }
-
             hostShowAnswer() {
                 clearInterval(this.questionTimer);
                 this.gameState = 'ANSWER_SHOW';
                 const q = this.questions[this.currentQuestionIdx];
-
-                Object.entries(this.answersReceived).forEach(([peerId, data]) => {
-                    if (data.answerIdx === q.correct) {
-                        const speedBonus = Math.round((data.timeLeft / q.timer) * 500);
-                        const pointsGained = 500 + speedBonus;
-                        if (this.playerConns[peerId]) {
-                            this.playerConns[peerId].score += pointsGained;
-                            this.playerConns[peerId].conn.send({
-                                type: 'UPDATE_SCORE',
-                                score: this.playerConns[peerId].score
-                            });
-                        }
-                    }
-                });
 
                 q.options.forEach((_, i) => {
                     const card = document.getElementById(`host-ans-card-${i}`);
@@ -903,11 +524,6 @@
                     } else {
                         card.classList.add('opacity-40');
                     }
-                });
-
-                this.broadcastToPlayers('SHOW_ANSWER', {
-                    correctIdx: q.correct,
-                    options: q.options
                 });
 
                 const nextBtn = document.getElementById('host-next-btn');
@@ -923,52 +539,30 @@
                 }
             }
 
-            hostShowFinalLeaderboard() {
+            async hostShowFinalLeaderboard() {
                 this.gameState = 'LEADERBOARD';
-                const leaderboard = Object.values(this.playerConns).map(p => ({
-                    name: p.name,
-                    score: p.score
-                })).sort((a, b) => b.score - a.score);
-
+                const { data: players } = await this.supabase.from('players').select('*').eq('room_id', this.roomCode).order('score', { ascending: false });
+                
+                const leaderboard = players || [];
                 this.sound.playFanfare();
                 confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 } });
 
                 this.renderLeaderboard(leaderboard);
-                this.broadcastToPlayers('SHOW_LEADERBOARD', { leaderboard });
                 this.showView('view-leaderboard');
             }
 
-            // --- PLAYER FLOW & WEBRTC CLIENT ---
+            // ===== PLAYER FLOW =====
             startPlayerFlow() {
                 this.role = 'player';
+                const urlParams = new URLSearchParams(window.location.search);
+                const roomParam = urlParams.get('room');
+                if (roomParam) {
+                    document.getElementById('join-room-code').value = roomParam;
+                }
                 this.showView('view-player-join');
             }
 
-            setJoinMode(mode) {
-                this.mode = mode;
-                const btnInd = document.getElementById('btn-mode-ind');
-                const btnTeam = document.getElementById('btn-mode-team');
-                const lbl = document.getElementById('lbl-nickname');
-                const presets = document.getElementById('team-presets');
-
-                if (mode === 'individual') {
-                    btnInd.className = 'py-2 rounded-lg text-xs font-bold bg-emerald-600 text-white transition-all';
-                    btnTeam.className = 'py-2 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition-all';
-                    lbl.innerText = 'Il tuo Nome / Nickname';
-                    presets.classList.add('hidden');
-                } else {
-                    btnTeam.className = 'py-2 rounded-lg text-xs font-bold bg-emerald-600 text-white transition-all';
-                    btnInd.className = 'py-2 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition-all';
-                    lbl.innerText = 'Nome della Squadra';
-                    presets.classList.remove('hidden');
-                }
-            }
-
-            selectPresetTeam(name) {
-                document.getElementById('join-nickname').value = name;
-            }
-
-            playerSubmitJoin(e) {
+            async playerSubmitJoin(e) {
                 e.preventDefault();
                 const code = document.getElementById('join-room-code').value.trim();
                 const name = document.getElementById('join-nickname').value.trim();
@@ -982,88 +576,60 @@
                 document.getElementById('header-room-code').innerText = code;
                 document.getElementById('header-room-badge').classList.remove('hidden');
 
-                // Connect to Host Peer via WebRTC
-                this.peer = new Peer({
-                    host: 'peerjs-server.herokuapp.com',
-                    secure: true,
-                    port: 443,
-                    iceServers: [
-                        { urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302', 'stun:stun2.l.google.com:19302'] }
-                    ]
-                });
-
-                this.peer.on('open', () => {
-                    this.hostConn = this.peer.connect(this.roomCode);
-
-                    this.hostConn.on('open', () => {
-                        this.hostConn.send({
-                            type: 'PLAYER_JOIN',
-                            name: this.playerName,
-                            mode: this.mode
-                        });
-                        this.showView('view-player-game');
-                        this.updatePlayerStatusBanner('Connesso all\'Host!', 'Sei collegato via WebRTC. Attendi l\'avvio delle domande.');
-                    });
-
-                    this.hostConn.on('data', (data) => this.handlePlayerIncomingData(data));
-
-                    this.hostConn.on('error', (err) => {
-                        alert('Errore di connessione alla stanza: ' + err);
-                    });
-                });
-            }
-
-            handlePlayerIncomingData(data) {
-                if (data.type === 'GAME_START') {
-                    this.myScore = 0;
-                    document.getElementById('player-disp-score').innerText = '0 PUNTI';
-                } else if (data.type === 'NEW_QUESTION') {
-                    this.mySelectedAnswer = null;
-                    this.enablePlayerButtons(true);
-                    this.renderPlayerQuestionOptions(data.options);
-                    this.updatePlayerStatusBanner('Scegli la Risposta!', 'Sii il più veloce per guadagnare punti bonus.');
-                    this.startPlayerLocalTimer(data.timer);
-                } else if (data.type === 'SHOW_ANSWER') {
-                    this.enablePlayerButtons(false);
-                    const isCorrect = this.mySelectedAnswer === data.correctIdx;
-                    if (isCorrect) {
-                        this.sound.playCorrect();
-                        this.updatePlayerStatusBanner('Esatto! 🎉', 'Ottima risposta!', 'emerald');
-                    } else {
-                        this.sound.playWrong();
-                        this.updatePlayerStatusBanner('Errato ❌', `Risposta corretta: ${data.options[data.correctIdx]}`, 'rose');
-                    }
-                } else if (data.type === 'UPDATE_SCORE') {
-                    this.myScore = data.score;
-                    document.getElementById('player-disp-score').innerText = `${this.myScore} PUNTI`;
-                } else if (data.type === 'SHOW_LEADERBOARD') {
-                    this.renderLeaderboard(data.leaderboard);
-                    this.showView('view-leaderboard');
+                // Verifica che la room esista
+                const { data: room } = await this.supabase.from('rooms').select('*').eq('id', code).single();
+                
+                if (!room) {
+                    alert('Stanza non trovata');
+                    return;
                 }
+
+                // Aggiungi giocatore
+                const playerId = 'player-' + Math.random().toString(36).substr(2, 9);
+                const { error } = await this.supabase.from('players').insert([{
+                    id: playerId,
+                    room_id: code,
+                    name: name,
+                    mode: 'individual',
+                    score: 0
+                }]);
+
+                if (error) {
+                    alert('Errore nel collegamento: ' + error.message);
+                    return;
+                }
+
+                this.playerData = { id: playerId, name, score: 0 };
+
+                // Subscribe ai messaggi della stanza
+                const sub = this.supabase
+                    .from(`rooms:id=eq.${code}`)
+                    .on('UPDATE', payload => {
+                        if (payload.new.game_state === 'GAME') {
+                            this.showView('view-player-game');
+                        }
+                    })
+                    .subscribe();
+
+                this.subscriptions.push(sub);
+                this.showView('view-player-game');
             }
 
-            renderPlayerQuestionOptions(options) {
-                options.forEach((opt, i) => {
-                    const el = document.getElementById(`player-ans-${i}`);
-                    if (el) el.innerText = opt;
-                });
-            }
-
-            playerSubmitAnswer(idx) {
+            async playerSubmitAnswer(idx) {
                 if (this.mySelectedAnswer !== null) return;
                 this.mySelectedAnswer = idx;
                 this.sound.playBeep(600, 0.08);
 
-                this.enablePlayerButtons(false);
-                this.updatePlayerStatusBanner('Risposta Inviata! 🚀', 'In attesa dello scadere del tempo...', 'indigo');
+                const answerId = 'ans-' + Math.random().toString(36).substr(2, 9);
+                await this.supabase.from('answers').insert([{
+                    id: answerId,
+                    room_id: this.roomCode,
+                    player_id: this.playerData.id,
+                    answer_idx: idx,
+                    time_left: this.timeLeft || 15
+                }]);
 
-                if (this.hostConn && this.hostConn.open) {
-                    this.hostConn.send({
-                        type: 'SUBMIT_ANSWER',
-                        answerIdx: idx,
-                        timeLeft: this.timeLeft || 15
-                    });
-                }
+                this.enablePlayerButtons(false);
             }
 
             enablePlayerButtons(enable) {
@@ -1089,15 +655,8 @@
                 this.playerTimer = setInterval(() => {
                     this.timeLeft--;
                     badge.innerText = `${this.timeLeft}s`;
-                    if (this.timeLeft <= 0) {
-                        clearInterval(this.playerTimer);
-                    }
+                    if (this.timeLeft <= 0) clearInterval(this.playerTimer);
                 }, 1000);
-            }
-
-            updatePlayerStatusBanner(title, sub) {
-                document.getElementById('player-status-title').innerText = title;
-                document.getElementById('player-status-sub').innerText = sub;
             }
 
             renderLeaderboard(list) {
@@ -1111,40 +670,15 @@
                 const p3 = list[2] || null;
 
                 podiumEl.innerHTML = `
-                    ${p2 ? `
-                    <div class="flex flex-col items-center flex-1">
-                        <span class="text-xs font-bold text-slate-300 truncate max-w-[90px] mb-1">${p2.name}</span>
-                        <span class="text-[10px] font-mono text-indigo-400 font-bold mb-2">${p2.score} pts</span>
-                        <div class="w-full bg-slate-700/80 rounded-t-2xl py-6 flex flex-col items-center border-t-2 border-slate-400 shadow-lg">
-                            <span class="text-2xl font-black text-slate-300">2</span>
-                        </div>
-                    </div>` : ''}
-
-                    <div class="flex flex-col items-center flex-1">
-                        <i class="fa-solid fa-crown text-amber-400 text-2xl mb-1 animate-bounce-subtle"></i>
-                        <span class="text-sm font-extrabold text-white truncate max-w-[110px] mb-1">${p1.name}</span>
-                        <span class="text-xs font-mono text-emerald-400 font-bold mb-2">${p1.score} pts</span>
-                        <div class="w-full bg-gradient-to-t from-amber-600 to-amber-500 rounded-t-2xl py-10 flex flex-col items-center shadow-xl shadow-amber-500/20 border-t-2 border-amber-300">
-                            <span class="text-4xl font-black text-slate-950">1</span>
-                        </div>
-                    </div>
-
-                    ${p3 ? `
-                    <div class="flex flex-col items-center flex-1">
-                        <span class="text-xs font-bold text-slate-300 truncate max-w-[90px] mb-1">${p3.name}</span>
-                        <span class="text-[10px] font-mono text-indigo-400 font-bold mb-2">${p3.score} pts</span>
-                        <div class="w-full bg-amber-900/60 rounded-t-2xl py-4 flex flex-col items-center border-t-2 border-amber-700 shadow-lg">
-                            <span class="text-xl font-black text-amber-500">3</span>
-                        </div>
-                    </div>` : ''}
+                    ${p2 ? `<div class="flex flex-col items-center flex-1"><span class="text-xs font-bold text-slate-300 truncate max-w-[90px] mb-1">${p2.name}</span><span class="text-[10px] font-mono text-indigo-400 font-bold mb-2">${p2.score} pts</span><div class="w-full bg-slate-700/80 rounded-t-2xl py-6 flex flex-col items-center border-t-2 border-slate-400 shadow-lg"><span class="text-2xl font-black text-slate-300">2</span></div></div>` : ''}
+                    <div class="flex flex-col items-center flex-1"><i class="fa-solid fa-crown text-amber-400 text-2xl mb-1 animate-bounce-subtle"></i><span class="text-sm font-extrabold text-white truncate max-w-[110px] mb-1">${p1.name}</span><span class="text-xs font-mono text-emerald-400 font-bold mb-2">${p1.score} pts</span><div class="w-full bg-gradient-to-t from-amber-600 to-amber-500 rounded-t-2xl py-10 flex flex-col items-center shadow-xl shadow-amber-500/20 border-t-2 border-amber-300"><span class="text-4xl font-black text-slate-950">1</span></div></div>
+                    ${p3 ? `<div class="flex flex-col items-center flex-1"><span class="text-xs font-bold text-slate-300 truncate max-w-[90px] mb-1">${p3.name}</span><span class="text-[10px] font-mono text-indigo-400 font-bold mb-2">${p3.score} pts</span><div class="w-full bg-amber-900/60 rounded-t-2xl py-4 flex flex-col items-center border-t-2 border-amber-700 shadow-lg"><span class="text-xl font-black text-amber-500">3</span></div></div>` : ''}
                 `;
 
                 fullListEl.innerHTML = list.map((item, idx) => `
                     <div class="glass-card px-4 py-3 rounded-xl flex justify-between items-center ${idx === 0 ? 'border border-amber-500/40' : ''}">
                         <div class="flex items-center space-x-3">
-                            <span class="w-6 h-6 rounded-full ${idx < 3 ? 'bg-amber-500 text-slate-950 font-black' : 'bg-slate-800 text-slate-400'} text-xs flex items-center justify-center font-mono">
-                                ${idx + 1}
-                            </span>
+                            <span class="w-6 h-6 rounded-full ${idx < 3 ? 'bg-amber-500 text-slate-950 font-black' : 'bg-slate-800 text-slate-400'} text-xs flex items-center justify-center font-mono">${idx + 1}</span>
                             <span class="text-sm font-bold text-white">${item.name}</span>
                         </div>
                         <span class="text-sm font-mono font-bold text-indigo-400">${item.score} PUNTI</span>
@@ -1152,147 +686,14 @@
                 `).join('');
             }
 
-            openQuestionEditor() {
-                this.renderEditorQuestionsList();
-                document.getElementById('modal-editor').classList.remove('hidden');
-            }
-
-            closeQuestionEditor() {
-                document.getElementById('modal-editor').classList.add('hidden');
-                document.getElementById('lobby-questions-count').innerText = `${this.questions.length} Domande`;
-            }
-
-            renderEditorQuestionsList() {
-                const listEl = document.getElementById('editor-questions-list');
-                listEl.innerHTML = this.questions.map((q, idx) => `
-                    <div class="glass-card p-5 rounded-2xl space-y-4 border border-slate-800 bg-slate-900/60">
-                        <div class="flex justify-between items-center text-xs">
-                            <span class="font-extrabold text-indigo-400 uppercase tracking-wider">Domanda ${idx + 1}</span>
-                            <button onclick="app.editorDeleteQuestion(${idx})" class="text-rose-400 hover:text-rose-300 text-xs font-bold flex items-center space-x-1 px-2 py-1 rounded bg-rose-950/40 border border-rose-800/40">
-                                <i class="fa-solid fa-trash"></i>
-                                <span>Elimina</span>
-                            </button>
-                        </div>
-
-                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                            <div class="sm:col-span-2">
-                                <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Categoria / Area</label>
-                                <input type="text" value="${q.category || 'Qualità'}" onchange="app.questions[${idx}].category = this.value" class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:border-indigo-500 focus:outline-none">
-                            </div>
-                            <div>
-                                <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Timer (Secondi)</label>
-                                <input type="number" min="5" max="120" value="${q.timer || 30}" onchange="app.questions[${idx}].timer = parseInt(this.value) || 30" class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:border-indigo-500 focus:outline-none">
-                            </div>
-                        </div>
-
-                        <div>
-                            <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Testo della Domanda</label>
-                            <input type="text" value="${q.question}" onchange="app.questions[${idx}].question = this.value" class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-sm font-semibold text-white focus:border-indigo-500 focus:outline-none">
-                        </div>
-
-                        <div class="space-y-2">
-                            <label class="block text-[11px] font-bold text-slate-400 uppercase">Opzioni di Risposta (Seleziona il pallino per impostare la Risposta Corretta)</label>
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                ${q.options.map((opt, optIdx) => `
-                                    <div class="flex items-center space-x-2 bg-slate-950 p-2 rounded-xl border ${q.correct === optIdx ? 'border-emerald-500/60 bg-emerald-950/20' : 'border-slate-800'}">
-                                        <input type="radio" name="correct-q-${idx}" ${q.correct === optIdx ? 'checked' : ''} onchange="app.questions[${idx}].correct = ${optIdx}; app.renderEditorQuestionsList();" class="accent-emerald-500 w-4 h-4 cursor-pointer">
-                                        <span class="text-xs font-bold text-slate-400 font-mono">${['A','B','C','D'][optIdx]}:</span>
-                                        <input type="text" value="${opt}" onchange="app.questions[${idx}].options[${optIdx}] = this.value" class="w-full bg-transparent text-xs text-white focus:outline-none">
-                                    </div>
-                                `).join('')}
-                            </div>
-                        </div>
-                    </div>
-                `).join('');
-            }
-
-            editorAddNewQuestion() {
-                this.questions.push({
-                    id: Date.now(),
-                    category: "Nuova Area",
-                    question: "Inserisci qui il testo della nuova domanda...",
-                    options: ["Opzione A", "Opzione B (Corretta)", "Opzione C", "Opzione D"],
-                    correct: 1,
-                    timer: 30
-                });
-                this.renderEditorQuestionsList();
-            }
-
-            editorDeleteQuestion(idx) {
-                if (this.questions.length <= 1) {
-                    alert("Devi mantenere almeno una domanda nel set!");
-                    return;
-                }
-                this.questions.splice(idx, 1);
-                this.renderEditorQuestionsList();
-            }
-
-            resetDefaultQuestions() {
-                if (confirm("Sei sicuro di voler ripristinare le domande predefinite della Qualità? Le tue modifiche correnti andranno perse.")) {
-                    this.questions = JSON.parse(JSON.stringify(DEFAULT_QUALITY_QUESTIONS));
-                    this.renderEditorQuestionsList();
-                }
-            }
-
-            exportQuestions() {
-                const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(this.questions, null, 2));
-                const downloadAnchor = document.createElement('a');
-                downloadAnchor.setAttribute("href", dataStr);
-                downloadAnchor.setAttribute("download", `quality_questions_${new Date().toISOString().slice(0,10)}.json`);
-                document.body.appendChild(downloadAnchor);
-                downloadAnchor.click();
-                downloadAnchor.remove();
-            }
-
-            importQuestions() {
-                document.getElementById('json-file-input').click();
-            }
-
-            handleJsonImport(event) {
-                const file = event.target.files[0];
-                if (!file) return;
-
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    try {
-                        const imported = JSON.parse(e.target.result);
-                        if (Array.isArray(imported) && imported.length > 0 && imported[0].question && imported[0].options) {
-                            this.questions = imported;
-                            document.getElementById('lobby-questions-count').innerText = `${this.questions.length} Domande`;
-                            alert(`Importate con successo ${this.questions.length} domande!`);
-                        } else {
-                            alert("Il file JSON selezionato non ha un formato valido per Quality Games.");
-                        }
-                    } catch (err) {
-                        alert("Errore nella lettura del file JSON: " + err.message);
-                    }
-                };
-                reader.readAsText(file);
-                event.target.value = ''; // Reset file input
-            }
-
-            editorAddNewQuestion() {
-                this.questions.push({
-                    id: Date.now(),
-                    category: "Qualità Generale",
-                    question: "Nuova Domanda Personalizzata...",
-                    options: ["Opzione A", "Opzione B", "Opzione C", "Opzione D"],
-                    correct: 0,
-                    timer: 30
-                });
-                this.renderEditorQuestionsList();
-            }
-
-            editorDeleteQuestion(idx) {
-                this.questions.splice(idx, 1);
-                this.renderEditorQuestionsList();
+            hostNextStep() {
+                // Placeholder per gestire il prossimo step
             }
         }
 
         let app;
         window.addEventListener('DOMContentLoaded', () => {
-            app = new PeerQualityApp();
-            app.init();
+            app = new QualityGamesApp();
         });
     </script>
 </body>
