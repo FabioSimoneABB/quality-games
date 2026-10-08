@@ -483,12 +483,15 @@
                 clearInterval(this.playerTimer);
                 this.role = null;
                 this.gameState = 'LOBBY';
+                // ✅ RESETTA LE DOMANDE AL DEFAULT
+                this.questions = [...DEFAULT_QUALITY_QUESTIONS];
                 document.getElementById('header-room-badge').classList.add('hidden');
                 this.showView('view-home');
             }
 
             // === HOST FLOW ===
             async startHostFlow() {
+                this.questions = [...DEFAULT_QUALITY_QUESTIONS];
                 this.role = 'host';
                 this.gameState = 'LOBBY';
                 const randomId = 'qg-' + Math.floor(1000 + Math.random() * 9000);
@@ -684,17 +687,22 @@
             async hostShowFinalLeaderboard() {
                 this.gameState = 'LEADERBOARD';
                 const { data: players } = await this.supabase.from('players').select('*').eq('room_id', this.roomCode).order('score', { ascending: false });
-
+            
                 await this.supabase.from('rooms').update({
                     game_state: 'LEADERBOARD'
                 }).eq('id', this.roomCode);
-
+            
                 const leaderboard = players || [];
                 this.sound.playFanfare();
                 confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 } });
-
+            
                 this.renderLeaderboard(leaderboard);
                 this.showView('view-leaderboard');
+                
+                // ✅ Opzionale: Elimina le vecchie stanze dopo 1 ora
+                setTimeout(async () => {
+                    await this.supabase.from('rooms').delete().eq('id', this.roomCode);
+                }, 3600000); // 1 ora
             }
 
             // === PLAYER FLOW ===
