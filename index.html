@@ -569,20 +569,23 @@
                     alert('Nessun giocatore collegato!');
                     return;
                 }
-
+            
                 clearInterval(this.hostPollInterval);
                 this.currentQuestionIdx = 0;
                 this.gameState = 'QUESTION';
-
+            
+                // ✅ SALVA LE DOMANDE NEL DATABASE
                 await this.supabase.from('rooms').update({
                     game_state: 'GAME',
                     current_question_idx: 0,
-                    answer_shown: false
+                    answer_shown: false,
+                    questions: this.questions  // ← AGGIUNTO
                 }).eq('id', this.roomCode);
-
+            
                 this.hostLoadQuestion(0);
                 this.showView('view-host-game');
             }
+
 
             hostLoadQuestion(idx) {
                 if (idx >= this.questions.length) {
@@ -769,7 +772,12 @@
             async checkPlayerGameState() {
                 const { data: room } = await this.supabase.from('rooms').select('*').eq('id', this.roomCode).single();
                 if (!room) return;
-
+            
+                // ✅ CARICA LE DOMANDE DAL DATABASE SE DISPONIBILI
+                if (room.questions && room.questions.length > 0) {
+                    this.questions = room.questions;
+                }
+            
                 if (room.answer_shown && !this.lastSeenAnswerShown) {
                     console.log('[PLAYER] Answer shown! Fermo timer');
                     this.lastSeenAnswerShown = true;
@@ -777,15 +785,14 @@
                     const btns = document.querySelectorAll('#player-buttons-container button');
                     btns.forEach(btn => btn.disabled = true);
                 }
-
+            
                 if (room.game_state === 'GAME' && room.current_question_idx !== this.lastSeenQuestionIdx) {
                     console.log('[PLAYER] Carico domanda! Indice:', room.current_question_idx);
                     this.lastSeenAnswerShown = false;
                     this.loadPlayerQuestion(room.current_question_idx);
                     this.lastSeenQuestionIdx = room.current_question_idx;
                 }
-
-
+            
                 if (room.game_state === 'LEADERBOARD' && this.gameState !== 'LEADERBOARD') {
                     clearInterval(this.playerPollInterval);
                     this.gameState = 'LEADERBOARD';
