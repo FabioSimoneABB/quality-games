@@ -92,6 +92,7 @@
 
     <main class="flex-grow flex flex-col items-center justify-center p-4 sm:p-6 max-w-6xl w-full mx-auto">
 
+        <!-- VIEW 1: HOME -->
         <section id="view-home" class="w-full max-w-4xl space-y-8 py-4">
             <div class="text-center space-y-3">
                 <div class="inline-flex items-center px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold">
@@ -146,6 +147,7 @@
             </div>
         </section>
 
+        <!-- VIEW 2: HOST LOBBY -->
         <section id="view-host-lobby" class="hidden w-full max-w-4xl space-y-6">
             <div class="flex flex-col md:flex-row gap-6 items-stretch">
                 <div class="glass-panel p-6 rounded-2xl md:w-5/12 flex flex-col items-center justify-between text-center space-y-4">
@@ -200,6 +202,7 @@
             </div>
         </section>
 
+        <!-- VIEW 3: HOST GAME -->
         <section id="view-host-game" class="hidden w-full max-w-4xl space-y-6">
             <div class="glass-panel p-6 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-4">
                 <div class="space-y-1 text-center md:text-left flex-grow">
@@ -223,6 +226,7 @@
             </div>
         </section>
 
+        <!-- VIEW 4: PLAYER JOIN -->
         <section id="view-player-join" class="hidden w-full max-w-md space-y-6">
             <div class="glass-panel p-8 rounded-3xl space-y-6 text-center border-t-4 border-emerald-500">
                 <div class="space-y-2">
@@ -270,6 +274,7 @@
             </div>
         </section>
 
+        <!-- VIEW 5: PLAYER GAME -->
         <section id="view-player-game" class="hidden w-full max-w-md space-y-4">
             <div class="glass-panel p-4 rounded-2xl flex justify-between items-center">
                 <div class="flex items-center space-x-2">
@@ -289,7 +294,14 @@
                 <p id="player-status-sub" class="text-xs text-slate-400">Sei connesso. Attendi l'avvio della domanda.</p>
             </div>
 
-            <div id="player-buttons-grid" class="grid grid-cols-1 gap-3">
+            <!-- ✅ AGGIUNTO: Container per testo della domanda -->
+            <div id="player-question-container" class="hidden glass-card p-4 rounded-2xl text-center">
+                <span id="player-q-category" class="px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 text-xs font-bold border border-indigo-500/30">Categoria</span>
+                <h2 id="player-q-text" class="text-lg font-extrabold text-white leading-snug mt-3">Testo della Domanda...</h2>
+            </div>
+
+            <!-- ✅ AGGIUNTO: Display bottoni solo durante GAME -->
+            <div id="player-buttons-container" class="hidden grid grid-cols-1 gap-3">
                 <button onclick="app.playerSubmitAnswer(0)" class="btn-answer w-full p-5 rounded-2xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-left flex items-center space-x-4">
                     <span class="w-10 h-10 rounded-xl bg-black/20 flex items-center justify-center text-lg font-black">A</span>
                     <span id="player-ans-0" class="text-base">Opzione A</span>
@@ -309,6 +321,7 @@
             </div>
         </section>
 
+        <!-- VIEW 6: LEADERBOARD -->
         <section id="view-leaderboard" class="hidden w-full max-w-4xl space-y-8 text-center py-4">
             <div class="space-y-2">
                 <span class="px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 text-xs font-bold border border-amber-500/30 uppercase tracking-widest">
@@ -644,7 +657,6 @@
                     }
                 });
 
-                // ✅ IMPORTANTE: Setta answer_shown = true nel database
                 await this.supabase.from('rooms').update({
                     answer_shown: true
                 }).eq('id', this.roomCode);
@@ -657,7 +669,6 @@
                     nextBtn.innerText = 'Prossima Domanda ➡️';
                     nextBtn.onclick = async () => {
                         this.currentQuestionIdx++;
-                        // ✅ IMPORTANTE: Incrementa current_question_idx e setta answer_shown = false
                         await this.supabase.from('rooms').update({
                             current_question_idx: this.currentQuestionIdx,
                             answer_shown: false
@@ -671,7 +682,6 @@
                 this.gameState = 'LEADERBOARD';
                 const { data: players } = await this.supabase.from('players').select('*').eq('room_id', this.roomCode).order('score', { ascending: false });
 
-                // ✅ Aggiorna game_state a LEADERBOARD
                 await this.supabase.from('rooms').update({
                     game_state: 'LEADERBOARD'
                 }).eq('id', this.roomCode);
@@ -760,16 +770,14 @@
                 const { data: room } = await this.supabase.from('rooms').select('*').eq('id', this.roomCode).single();
                 if (!room) return;
 
-                // ✅ Detetta quando answer_shown diventa true → ferma timer
                 if (room.answer_shown && !this.lastSeenAnswerShown) {
-                    console.log('[PLAYER] Answer shown! Fermi timer');
+                    console.log('[PLAYER] Answer shown! Fermo timer');
                     this.lastSeenAnswerShown = true;
                     clearInterval(this.playerTimer);
-                    const btns = document.querySelectorAll('#player-buttons-grid button');
+                    const btns = document.querySelectorAll('#player-buttons-container button');
                     btns.forEach(btn => btn.disabled = true);
                 }
 
-                // ✅ Detetta quando current_question_idx cambia → carica prossima domanda
                 if (room.current_question_idx > this.lastSeenQuestionIdx && room.game_state === 'GAME') {
                     if (this.lastSeenQuestionIdx !== -1) {
                         console.log('[PLAYER] Nuova domanda! Indice:', room.current_question_idx);
@@ -779,7 +787,6 @@
                     this.lastSeenQuestionIdx = room.current_question_idx;
                 }
 
-                // ✅ Detetta leaderboard
                 if (room.game_state === 'LEADERBOARD' && this.gameState !== 'LEADERBOARD') {
                     clearInterval(this.playerPollInterval);
                     this.gameState = 'LEADERBOARD';
@@ -796,6 +803,11 @@
                 this.currentQuestionIdx = idx;
                 this.mySelectedAnswer = null;
 
+                // ✅ MOSTRA DOMANDA E OPZIONI
+                document.getElementById('player-q-category').innerText = q.category;
+                document.getElementById('player-q-text').innerText = q.question;
+                document.getElementById('player-question-container').classList.remove('hidden');
+
                 document.getElementById('player-ans-0').innerText = q.options[0];
                 document.getElementById('player-ans-1').innerText = q.options[1];
                 document.getElementById('player-ans-2').innerText = q.options[2];
@@ -804,8 +816,16 @@
                 document.getElementById('player-status-title').innerText = 'Scegli la Risposta!';
                 document.getElementById('player-status-sub').innerText = 'Sii il più veloce per guadagnare punti bonus.';
 
-                const btns = document.querySelectorAll('#player-buttons-grid button');
-                btns.forEach(btn => btn.disabled = false);
+                // ✅ MOSTRA I BOTTONI
+                const buttonsContainer = document.getElementById('player-buttons-container');
+                buttonsContainer.classList.remove('hidden');
+
+                // ✅ RESETTA TUTTI GLI STILI DEI BOTTONI
+                const btns = document.querySelectorAll('#player-buttons-container button');
+                btns.forEach((btn, i) => {
+                    btn.disabled = false;
+                    btn.classList.remove('opacity-40', 'ring-4', 'ring-white');
+                });
 
                 this.startPlayerLocalTimer(q.timer);
             }
@@ -832,7 +852,7 @@
                 document.getElementById('player-disp-score').innerText = `${this.myScore} PUNTI`;
                 await this.supabase.from('players').update({ score: this.myScore }).eq('id', this.playerData.id);
 
-                const btns = document.querySelectorAll('#player-buttons-grid button');
+                const btns = document.querySelectorAll('#player-buttons-container button');
                 btns.forEach((btn, i) => {
                     btn.disabled = true;
                     if (i !== this.mySelectedAnswer) btn.classList.add('opacity-40');
