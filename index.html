@@ -173,11 +173,9 @@
         <div class="glass-panel p-6 rounded-2xl text-left">
             <div id="intermediate-lb-list" class="space-y-2 max-h-80 overflow-y-auto pr-1"></div>
         </div>
-        <div class="glass-card p-4 rounded-2xl space-y-2">
-            <p class="text-sm text-slate-400">Prossima domanda tra</p>
-            <p id="intermediate-countdown-num" class="text-5xl font-black text-indigo-400">5</p>
-            <p class="text-xs text-slate-500">secondi...</p>
-        </div>
+        <button id="btn-next-question" onclick="app.hostStartNextQuestion()" class="w-full py-4 rounded-xl font-black text-lg bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-600/30 transition-all">
+            Inizia Prossima Domanda ➡️
+        </button>
     </section>
 
     <!-- VIEW 5: PLAYER JOIN -->
@@ -222,7 +220,7 @@
                 <div class="w-8 h-8 rounded-full bg-indigo-600/30 border border-indigo-500/30 flex items-center justify-center text-indigo-400 text-xs font-bold"><i class="fa-solid fa-user"></i></div>
                 <div>
                     <div id="player-disp-name" class="text-sm font-bold text-white truncate max-w-[130px]">Giocatore</div>
-                    <div id="player-disp-score" class="text-xs text-indigo-400 font-mono font-bold">0 PUNTI</div>
+                    <div id="player-disp-score" class="text-xs text-indigo-400 font-mono font-bold">-- PUNTI</div>
                 </div>
             </div>
             <div id="player-timer-badge" class="px-3 py-1 rounded-full bg-slate-800 text-white font-mono font-black text-lg border border-slate-700">--s</div>
@@ -358,7 +356,6 @@ class QualityGamesApp {
         this.gameState = 'LOBBY';
         this.questionTimer = null;
         this.playerTimer = null;
-        this.intermediateCountdownInterval = null;
         this.timeLeft = 0;
         this.playerName = '';
         this.mode = 'individual';
@@ -397,7 +394,6 @@ class QualityGamesApp {
         clearInterval(this.playerPollInterval);
         clearInterval(this.questionTimer);
         clearInterval(this.playerTimer);
-        clearInterval(this.intermediateCountdownInterval);
         this.role = null;
         this.gameState = 'LOBBY';
         this.questions = [...DEFAULT_QUALITY_QUESTIONS];
@@ -586,31 +582,20 @@ class QualityGamesApp {
 
         this.renderIntermediateLeaderboard(players || [], this.currentQuestionIdx + 1, this.questions.length);
         this.showView('view-intermediate-leaderboard');
+    }
 
-        let countdown = 5;
-        const numEl = document.getElementById('intermediate-countdown-num');
-        numEl.innerText = countdown;
-        clearInterval(this.intermediateCountdownInterval);
-
-        this.intermediateCountdownInterval = setInterval(async () => {
-            countdown--;
-            numEl.innerText = countdown;
-            if (countdown <= 0) {
-                clearInterval(this.intermediateCountdownInterval);
-                this.currentQuestionIdx++;
-                await this.supabase.from('rooms').update({
-                    game_state: 'GAME',
-                    current_question_idx: this.currentQuestionIdx,
-                    answer_shown: false
-                }).eq('id', this.roomCode);
-                this.hostLoadQuestion(this.currentQuestionIdx);
-                this.showView('view-host-game');
-            }
-        }, 1000);
+    async hostStartNextQuestion() {
+        this.currentQuestionIdx++;
+        await this.supabase.from('rooms').update({
+            game_state: 'GAME',
+            current_question_idx: this.currentQuestionIdx,
+            answer_shown: false
+        }).eq('id', this.roomCode);
+        this.hostLoadQuestion(this.currentQuestionIdx);
+        this.showView('view-host-game');
     }
 
     async hostShowFinalLeaderboard() {
-        clearInterval(this.intermediateCountdownInterval);
         this.gameState = 'LEADERBOARD';
         const { data: players } = await this.supabase.from('players').select('*').eq('room_id', this.roomCode).order('score', { ascending: false });
         await this.supabase.from('rooms').update({
@@ -674,6 +659,7 @@ class QualityGamesApp {
 
         this.playerData = { id: playerId, name: name, score: 0 };
         document.getElementById('player-disp-name').innerText = name;
+        document.getElementById('player-disp-score').innerText = '-- PUNTI';
         document.getElementById('header-room-code').innerText = code;
         document.getElementById('header-room-badge').classList.remove('hidden');
         this.showView('view-player-game');
@@ -709,6 +695,8 @@ class QualityGamesApp {
                 document.getElementById('player-status-sub').innerText = 'Risposta corretta: ' + q.options[q.correct];
             }
 
+            document.getElementById('player-disp-score').innerText = this.myScore + ' PUNTI';
+
             const btns = document.querySelectorAll('#player-buttons-container button');
             btns.forEach(btn => btn.disabled = true);
         }
@@ -718,16 +706,6 @@ class QualityGamesApp {
             const { data: players } = await this.supabase.from('players').select('*').eq('room_id', this.roomCode).order('score', { ascending: false });
             this.renderIntermediateLeaderboard(players || [], this.currentQuestionIdx + 1, this.questions.length);
             this.showView('view-intermediate-leaderboard');
-
-            let countdown = 5;
-            const numEl = document.getElementById('intermediate-countdown-num');
-            numEl.innerText = countdown;
-            clearInterval(this.intermediateCountdownInterval);
-            this.intermediateCountdownInterval = setInterval(() => {
-                countdown--;
-                numEl.innerText = Math.max(0, countdown);
-                if (countdown <= 0) clearInterval(this.intermediateCountdownInterval);
-            }, 1000);
         }
 
         if (room.game_state === 'GAME' && room.current_question_idx !== this.lastSeenQuestionIdx) {
@@ -740,7 +718,6 @@ class QualityGamesApp {
 
         if (room.game_state === 'LEADERBOARD' && this.gameState !== 'LEADERBOARD') {
             clearInterval(this.playerPollInterval);
-            clearInterval(this.intermediateCountdownInterval);
             this.gameState = 'LEADERBOARD';
             const { data: players } = await this.supabase.from('players').select('*').eq('room_id', this.roomCode).order('score', { ascending: false });
             this.renderFinalLeaderboard(players || []);
@@ -767,6 +744,7 @@ class QualityGamesApp {
         document.getElementById('player-status-title').innerText = 'Scegli la Risposta!';
         document.getElementById('player-status-sub').innerText = 'Sii il più veloce per guadagnare punti bonus.';
         document.getElementById('player-timer-badge').innerText = '--s';
+        document.getElementById('player-disp-score').innerText = '-- PUNTI';
 
         const container = document.getElementById('player-buttons-container');
         container.classList.remove('hidden');
@@ -789,7 +767,6 @@ class QualityGamesApp {
         if (this.myAnswerCorrect) {
             const speedBonus = Math.round((this.timeLeft / q.timer) * 500);
             this.myScore += 500 + speedBonus;
-            document.getElementById('player-disp-score').innerText = this.myScore + ' PUNTI';
             await this.supabase.from('players').update({ score: this.myScore }).eq('id', this.playerData.id);
         }
 
@@ -800,7 +777,7 @@ class QualityGamesApp {
         });
 
         document.getElementById('player-status-title').innerText = 'Risposta inviata ✓';
-        document.getElementById('player-status-sub').innerText = 'Attendi che l host mostri la risposta...';
+        document.getElementById('player-status-sub').innerText = 'Attendi che HOST mostri la risposta...';
     }
 
     startPlayerLocalTimer(seconds) {
