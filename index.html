@@ -374,6 +374,7 @@ class QualityGamesApp {
         this.gameState = 'LOBBY';
         this.questionTimer = null;
         this.playerTimer = null;
+        this.hostAnswersCheckInterval = null;
         this.timeLeft = 0;
         this.playerName = '';
         this.mode = 'individual';
@@ -412,6 +413,7 @@ class QualityGamesApp {
         clearInterval(this.playerPollInterval);
         clearInterval(this.questionTimer);
         clearInterval(this.playerTimer);
+        clearInterval(this.hostAnswersCheckInterval);
         this.role = null;
         this.gameState = 'LOBBY';
         this.questions = [...DEFAULT_QUALITY_QUESTIONS];
@@ -541,7 +543,17 @@ class QualityGamesApp {
         nextBtn.innerText = 'Mostra Risposta';
         nextBtn.onclick = () => this.hostShowAnswer();
 
+        clearInterval(this.hostAnswersCheckInterval);
+        this.hostAnswersCheckInterval = setInterval(() => this.hostCheckAnswers(), 500);
         this.startHostTimer(q.timer);
+    }
+
+    async hostCheckAnswers() {
+        const { data: players } = await this.supabase.from('players').select('*').eq('room_id', this.roomCode);
+        if (!players) return;
+        
+        const answered = players.filter(p => p.last_question_answered >= this.currentQuestionIdx).length;
+        document.getElementById('host-answers-submitted-count').innerText = answered;
     }
 
     startHostTimer(seconds) {
@@ -563,6 +575,7 @@ class QualityGamesApp {
 
     async hostShowAnswer() {
         clearInterval(this.questionTimer);
+        clearInterval(this.hostAnswersCheckInterval);
         this.gameState = 'ANSWER_SHOW';
         const q = this.questions[this.currentQuestionIdx];
 
@@ -614,6 +627,7 @@ class QualityGamesApp {
     }
 
     async hostShowFinalLeaderboard() {
+        clearInterval(this.hostAnswersCheckInterval);
         this.gameState = 'LEADERBOARD';
         const { data: players } = await this.supabase.from('players').select('*').eq('room_id', this.roomCode).order('score', { ascending: false });
         await this.supabase.from('rooms').update({
@@ -670,7 +684,8 @@ class QualityGamesApp {
             room_id: code,
             name: name,
             mode: this.mode,
-            score: 0
+            score: 0,
+            last_question_answered: -1
         }]);
 
         if (error) { alert('Errore: ' + error.message); return; }
@@ -785,7 +800,14 @@ class QualityGamesApp {
         if (this.myAnswerCorrect) {
             const speedBonus = Math.round((this.timeLeft / q.timer) * 500);
             this.myScore += 500 + speedBonus;
-            await this.supabase.from('players').update({ score: this.myScore }).eq('id', this.playerData.id);
+            await this.supabase.from('players').update({ 
+                score: this.myScore,
+                last_question_answered: this.currentQuestionIdx
+            }).eq('id', this.playerData.id);
+        } else {
+            await this.supabase.from('players').update({ 
+                last_question_answered: this.currentQuestionIdx
+            }).eq('id', this.playerData.id);
         }
 
         document.querySelectorAll('#player-buttons-container button').forEach((btn, i) => {
@@ -795,7 +817,7 @@ class QualityGamesApp {
         });
 
         document.getElementById('player-status-title').innerText = 'Risposta inviata ✓';
-        document.getElementById('player-status-sub').innerText = 'Attendi che l Host mostri la risposta...';
+        document.getElementById('player-status-sub').innerText = 'Attendi che l host mostri la risposta...';
     }
 
     startPlayerLocalTimer(seconds) {
