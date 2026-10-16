@@ -161,21 +161,39 @@
         </div>
     </section>
 
-    <!-- VIEW 4: CLASSIFICA INTERMEDIA -->
-    <section id="view-intermediate-leaderboard" class="hidden w-full max-w-2xl space-y-6 text-center py-4">
+    <!-- VIEW 4: CLASSIFICA INTERMEDIA (HOST ONLY) -->
+    <section id="view-intermediate-leaderboard-host" class="hidden w-full max-w-2xl space-y-6 text-center py-4">
         <div class="space-y-2">
             <span class="px-3 py-1 rounded-full bg-sky-500/20 text-sky-300 text-xs font-bold border border-sky-500/30 uppercase tracking-widest">
                 <i class="fa-solid fa-chart-bar mr-1.5"></i>Classifica Intermedia
             </span>
             <h2 class="text-2xl sm:text-3xl font-black text-white">Posizioni Attuali</h2>
-            <p id="intermediate-lb-subtitle" class="text-slate-400 text-sm">Domanda 1 di 8</p>
+            <p id="intermediate-lb-subtitle-host" class="text-slate-400 text-sm">Domanda 1 di 8</p>
         </div>
         <div class="glass-panel p-6 rounded-2xl text-left">
-            <div id="intermediate-lb-list" class="space-y-2 max-h-80 overflow-y-auto pr-1"></div>
+            <div id="intermediate-lb-list-host" class="space-y-2 max-h-80 overflow-y-auto pr-1"></div>
         </div>
-        <button id="btn-next-question" onclick="app.hostStartNextQuestion()" class="w-full py-4 rounded-xl font-black text-lg bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-600/30 transition-all">
+        <button id="btn-next-question-host" onclick="app.hostStartNextQuestion()" class="w-full py-4 rounded-xl font-black text-lg bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-600/30 transition-all">
             Inizia Prossima Domanda ➡️
         </button>
+    </section>
+
+    <!-- VIEW 4B: CLASSIFICA INTERMEDIA (PLAYER ONLY) -->
+    <section id="view-intermediate-leaderboard-player" class="hidden w-full max-w-2xl space-y-6 text-center py-4">
+        <div class="space-y-2">
+            <span class="px-3 py-1 rounded-full bg-sky-500/20 text-sky-300 text-xs font-bold border border-sky-500/30 uppercase tracking-widest">
+                <i class="fa-solid fa-chart-bar mr-1.5"></i>Classifica Intermedia
+            </span>
+            <h2 class="text-2xl sm:text-3xl font-black text-white">Posizioni Attuali</h2>
+            <p id="intermediate-lb-subtitle-player" class="text-slate-400 text-sm">Domanda 1 di 8</p>
+        </div>
+        <div class="glass-panel p-6 rounded-2xl text-left">
+            <div id="intermediate-lb-list-player" class="space-y-2 max-h-80 overflow-y-auto pr-1"></div>
+        </div>
+        <div class="glass-card p-4 rounded-2xl text-center space-y-2">
+            <p class="text-sm text-slate-400 font-semibold">L'host sta preparando la prossima domanda...</p>
+            <p class="text-xs text-slate-500">Rimani in attesa</p>
+        </div>
     </section>
 
     <!-- VIEW 5: PLAYER JOIN -->
@@ -580,8 +598,8 @@ class QualityGamesApp {
             game_state: 'SHOWING_LEADERBOARD'
         }).eq('id', this.roomCode);
 
-        this.renderIntermediateLeaderboard(players || [], this.currentQuestionIdx + 1, this.questions.length);
-        this.showView('view-intermediate-leaderboard');
+        this.renderIntermediateLeaderboard(players || [], this.currentQuestionIdx + 1, this.questions.length, 'host');
+        this.showView('view-intermediate-leaderboard-host');
     }
 
     async hostStartNextQuestion() {
@@ -704,8 +722,8 @@ class QualityGamesApp {
         if (room.game_state === 'SHOWING_LEADERBOARD' && this.lastSeenGameState !== 'SHOWING_LEADERBOARD') {
             this.lastSeenGameState = 'SHOWING_LEADERBOARD';
             const { data: players } = await this.supabase.from('players').select('*').eq('room_id', this.roomCode).order('score', { ascending: false });
-            this.renderIntermediateLeaderboard(players || [], this.currentQuestionIdx + 1, this.questions.length);
-            this.showView('view-intermediate-leaderboard');
+            this.renderIntermediateLeaderboard(players || [], this.currentQuestionIdx + 1, this.questions.length, 'player');
+            this.showView('view-intermediate-leaderboard-player');
         }
 
         if (room.game_state === 'GAME' && room.current_question_idx !== this.lastSeenQuestionIdx) {
@@ -777,7 +795,7 @@ class QualityGamesApp {
         });
 
         document.getElementById('player-status-title').innerText = 'Risposta inviata ✓';
-        document.getElementById('player-status-sub').innerText = 'Attendi che HOST mostri la risposta...';
+        document.getElementById('player-status-sub').innerText = 'Attendi che l Host mostri la risposta...';
     }
 
     startPlayerLocalTimer(seconds) {
@@ -792,9 +810,12 @@ class QualityGamesApp {
         }, 1000);
     }
 
-    renderIntermediateLeaderboard(list, questionNum, totalQuestions) {
-        document.getElementById('intermediate-lb-subtitle').innerText = 'Dopo la domanda ' + questionNum + ' di ' + totalQuestions;
-        const listEl = document.getElementById('intermediate-lb-list');
+    renderIntermediateLeaderboard(list, questionNum, totalQuestions, role) {
+        let subtitleId = role === 'host' ? 'intermediate-lb-subtitle-host' : 'intermediate-lb-subtitle-player';
+        let listId = role === 'host' ? 'intermediate-lb-list-host' : 'intermediate-lb-list-player';
+
+        document.getElementById(subtitleId).innerText = 'Dopo la domanda ' + questionNum + ' di ' + totalQuestions;
+        const listEl = document.getElementById(listId);
         if (list.length === 0) { listEl.innerHTML = '<p class="text-slate-500 text-sm text-center py-4">Nessun dato disponibile</p>'; return; }
         listEl.innerHTML = list.map((item, idx) => `
             <div class="glass-card px-4 py-3 rounded-xl flex justify-between items-center ${idx === 0 ? 'border border-amber-500/40' : 'border border-transparent'}">
