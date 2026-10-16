@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="mobile-web-app-capable" content="yes">
     <title>Quality Games Hub</title>
-    <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#0f172a">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -549,11 +549,13 @@ class QualityGamesApp {
     }
 
     async hostCheckAnswers() {
-        const { data: players } = await this.supabase.from('players').select('*').eq('room_id', this.roomCode);
-        if (!players) return;
+        const { count } = await this.supabase
+            .from('responses')
+            .select('*', { count: 'exact', head: true })
+            .eq('room_id', this.roomCode)
+            .eq('question_idx', this.currentQuestionIdx);
         
-        const answered = players.filter(p => p.last_question_answered >= this.currentQuestionIdx).length;
-        document.getElementById('host-answers-submitted-count').innerText = answered;
+        document.getElementById('host-answers-submitted-count').innerText = (count || 0);
     }
 
     startHostTimer(seconds) {
@@ -684,8 +686,7 @@ class QualityGamesApp {
             room_id: code,
             name: name,
             mode: this.mode,
-            score: 0,
-            last_question_answered: -1
+            score: 0
         }]);
 
         if (error) { alert('Errore: ' + error.message); return; }
@@ -801,14 +802,17 @@ class QualityGamesApp {
             const speedBonus = Math.round((this.timeLeft / q.timer) * 500);
             this.myScore += 500 + speedBonus;
             await this.supabase.from('players').update({ 
-                score: this.myScore,
-                last_question_answered: this.currentQuestionIdx
-            }).eq('id', this.playerData.id);
-        } else {
-            await this.supabase.from('players').update({ 
-                last_question_answered: this.currentQuestionIdx
+                score: this.myScore
             }).eq('id', this.playerData.id);
         }
+
+        await this.supabase.from('responses').insert([{
+            room_id: this.roomCode,
+            player_id: this.playerData.id,
+            question_idx: this.currentQuestionIdx,
+            answer_idx: idx,
+            is_correct: this.myAnswerCorrect
+        }]);
 
         document.querySelectorAll('#player-buttons-container button').forEach((btn, i) => {
             btn.disabled = true;
