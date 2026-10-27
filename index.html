@@ -142,6 +142,9 @@
         <div class="glass-panel p-6 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-4">
             <div class="space-y-1 text-center md:text-left flex-grow">
                 <span id="host-q-category" class="px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 text-xs font-bold border border-indigo-500/30">Qualità</span>
+                <div id="host-q-image-container" class="hidden mt-3 max-w-xs mx-auto md:mx-0">
+                    <img id="host-q-image" src="" alt="Domanda" class="rounded-xl max-h-48 w-full object-cover border border-slate-700">
+                </div>
                 <h2 id="host-q-text" class="text-xl md:text-2xl font-extrabold text-white leading-snug mt-2">Testo della Domanda...</h2>
             </div>
             <div class="flex-shrink-0 flex flex-col items-center justify-center">
@@ -249,6 +252,9 @@
         </div>
         <div id="player-question-container" class="hidden glass-card p-4 rounded-2xl text-center">
             <span id="player-q-category" class="px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 text-xs font-bold border border-indigo-500/30">Categoria</span>
+            <div id="player-q-image-container" class="hidden mt-3">
+                <img id="player-q-image" src="" alt="Domanda" class="rounded-xl max-h-40 w-full object-cover border border-slate-700">
+            </div>
             <h2 id="player-q-text" class="text-lg font-extrabold text-white leading-snug mt-3">Testo della Domanda...</h2>
         </div>
         <div id="player-buttons-container" class="hidden grid grid-cols-1 gap-3">
@@ -293,11 +299,11 @@
 
 <!-- MODAL: Question Editor -->
 <div id="modal-editor" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
-    <div class="glass-panel w-full max-w-3xl rounded-3xl p-6 space-y-6 max-h-[90vh] flex flex-col justify-between border border-slate-700 shadow-2xl">
+    <div class="glass-panel w-full max-w-3xl rounded-3xl p-6 space-y-6 max-h-[90vh] flex flex-col justify-between border border-slate-700 shadow-2xl overflow-y-auto">
         <div class="flex justify-between items-center border-b border-slate-800 pb-4">
             <div>
                 <h3 class="text-xl font-bold text-white flex items-center space-x-2"><i class="fa-solid fa-sliders text-indigo-400"></i><span>Editor Avanzato Domande</span></h3>
-                <p class="text-xs text-slate-400">Modifica testo, opzioni, risposta corretta e timer per ciascuna domanda</p>
+                <p class="text-xs text-slate-400">Modifica testo, opzioni, risposta corretta, timer e foto</p>
             </div>
             <button onclick="app.closeQuestionEditor()" class="w-8 h-8 rounded-lg bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
         </div>
@@ -327,14 +333,14 @@ const { createClient } = window.supabase;
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const DEFAULT_QUALITY_QUESTIONS = [
-    { id: 1, category: "Incoming Inspection", question: "Nel piano di campionamento ISO 2859-1 (AQL), cosa indica un AQL dell'1.0%?", options: ["Il 1% del lotto viene sempre scartato", "Il livello di qualità accettabile massimo medio di non conformità", "Che si controlla solo 1 pezzo ogni 100 prodotti", "Un errore massimo tollerato del 10% sui controlli"], correct: 1, timer: 30 },
-    { id: 2, category: "First Article Inspection (FAI)", question: "Secondo la norma AS9102 / ISO 9001, qual è il fine principale del FAI report?", options: ["Sostituire i controlli finali di collaudo", "Verificare che il processo sia capace di produrre parti conformi ai disegni", "Calcolare solo il costo della lavorazione meccanica", "Certificare l'imballo del primo pezzo"], correct: 1, timer: 30 },
-    { id: 3, category: "Laboratorio Prove", question: "Durante una prova di trazione sul metallo, cosa rappresenta il punto di Snervamento (Yield Strength)?", options: ["Il momento in cui il provino si spezza", "La transizione dalla deformazione elastica a quella plastica permanente", "Il massimo carico sostenibile dalla provetta", "La percentuale di allungamento finale"], correct: 1, timer: 25 },
-    { id: 4, category: "Qualità di Processo", question: "Cosa si intende per dispositivo 'Poka-Yoke' in una linea di assemblaggio?", options: ["Un software per la gestione dei turni", "Un meccanismo a prova di errore che impedisce lo sbaglio dell'operatore", "Un modulo per la registrazione dell'orario di lavoro", "Un tipo di calibro digitale per le filettature"], correct: 1, timer: 20 },
-    { id: 5, category: "Qualità di Processo", question: "In una metodologia 8D Report per l'analisi dei problemi, qual è la fase D3?", options: ["Definizione del Team", "Azioni Contentive Immediate (ICA)", "Identificazione della Causa Radice (Root Cause)", "Azioni Correttive Permanenti (PCA)"], correct: 1, timer: 25 },
-    { id: 6, category: "Laboratorio Prove", question: "Il test in Camera a Nebbia Salina (Salt Spray Test - ISO 9227) viene utilizzato per:", options: ["Misurare la durezza della superficie metallica", "Valutare la resistenza alla corrosione di rivestimenti e trattamenti", "Determinare la rugosità superficiale Ra", "Testare l'adesione della vernice su plastica"], correct: 1, timer: 25 },
-    { id: 7, category: "First Article Inspection (FAI)", question: "Nelle tolleranze geometriche (GD&T), quale simbolo rappresenta la 'Posizione Vera' (True Position)?", options: ["Un cerchio con due linee a croce al centro (⌖)", "Due cerchi concentrici (◎)", "Una freccia inclinata (↗)", "Un parallelogramma (▱)"], correct: 0, timer: 20 },
-    { id: 8, category: "Qualità di Processo", question: "Nel Controllo Statistico di Processo (SPC), un indice Cp o Cpk maggiore di 1.33 indica:", options: ["Un processo instabile e fuori controllo", "Un processo adeguatamente capace di rispettare le tolleranze", "Un tasso di scarto superiore al 5%", "Che la strumentazione va ricalibrata immediatamente"], correct: 1, timer: 25 }
+    { id: 1, category: "Incoming Inspection", question: "Nel piano di campionamento ISO 2859-1 (AQL), cosa indica un AQL dell'1.0%?", options: ["Il 1% del lotto viene sempre scartato", "Il livello di qualità accettabile massimo medio di non conformità", "Che si controlla solo 1 pezzo ogni 100 prodotti", "Un errore massimo tollerato del 10% sui controlli"], correct: 1, timer: 30, image: null },
+    { id: 2, category: "First Article Inspection (FAI)", question: "Secondo la norma AS9102 / ISO 9001, qual è il fine principale del FAI report?", options: ["Sostituire i controlli finali di collaudo", "Verificare che il processo sia capace di produrre parti conformi ai disegni", "Calcolare solo il costo della lavorazione meccanica", "Certificare l'imballo del primo pezzo"], correct: 1, timer: 30, image: null },
+    { id: 3, category: "Laboratorio Prove", question: "Durante una prova di trazione sul metallo, cosa rappresenta il punto di Snervamento (Yield Strength)?", options: ["Il momento in cui il provino si spezza", "La transizione dalla deformazione elastica a quella plastica permanente", "Il massimo carico sostenibile dalla provetta", "La percentuale di allungamento finale"], correct: 1, timer: 25, image: null },
+    { id: 4, category: "Qualità di Processo", question: "Cosa si intende per dispositivo 'Poka-Yoke' in una linea di assemblaggio?", options: ["Un software per la gestione dei turni", "Un meccanismo a prova di errore che impedisce lo sbaglio dell'operatore", "Un modulo per la registrazione dell'orario di lavoro", "Un tipo di calibro digitale per le filettature"], correct: 1, timer: 20, image: null },
+    { id: 5, category: "Qualità di Processo", question: "In una metodologia 8D Report per l'analisi dei problemi, qual è la fase D3?", options: ["Definizione del Team", "Azioni Contentive Immediate (ICA)", "Identificazione della Causa Radice (Root Cause)", "Azioni Correttive Permanenti (PCA)"], correct: 1, timer: 25, image: null },
+    { id: 6, category: "Laboratorio Prove", question: "Il test in Camera a Nebbia Salina (Salt Spray Test - ISO 9227) viene utilizzato per:", options: ["Misurare la durezza della superficie metallica", "Valutare la resistenza alla corrosione di rivestimenti e trattamenti", "Determinare la rugosità superficiale Ra", "Testare l'adesione della vernice su plastica"], correct: 1, timer: 25, image: null },
+    { id: 7, category: "First Article Inspection (FAI)", question: "Nelle tolleranze geometriche (GD&T), quale simbolo rappresenta la 'Posizione Vera' (True Position)?", options: ["Un cerchio con due linee a croce al centro (⌖)", "Due cerchi concentrici (◎)", "Una freccia inclinata (↗)", "Un parallelogramma (▱)"], correct: 0, timer: 20, image: null },
+    { id: 8, category: "Qualità di Processo", question: "Nel Controllo Statistico di Processo (SPC), un indice Cp o Cpk maggiore di 1.33 indica:", options: ["Un processo instabile e fuori controllo", "Un processo adeguatamente capace di rispettare le tolleranze", "Un tasso di scarto superiore al 5%", "Che la strumentazione va ricalibrata immediatamente"], correct: 1, timer: 25, image: null }
 ];
 
 class SoundEngine {
@@ -430,7 +436,7 @@ class QualityGamesApp {
     // ==================== HOST FLOW ====================
 
     async startHostFlow() {
-        this.questions = [...DEFAULT_QUALITY_QUESTIONS];
+        this.questions = JSON.parse(JSON.stringify(DEFAULT_QUALITY_QUESTIONS));
         this.role = 'host';
         this.gameState = 'LOBBY';
         const randomId = 'qg-' + Math.floor(1000 + Math.random() * 9000);
@@ -530,6 +536,14 @@ class QualityGamesApp {
         document.getElementById('host-q-text').innerText = q.question;
         document.getElementById('host-total-players-count').innerText = Object.keys(this.players).length;
         document.getElementById('host-answers-submitted-count').innerText = '0';
+
+        const imgContainer = document.getElementById('host-q-image-container');
+        if (q.image) {
+            imgContainer.classList.remove('hidden');
+            document.getElementById('host-q-image').src = q.image;
+        } else {
+            imgContainer.classList.add('hidden');
+        }
 
         const colors = ['bg-rose-950/40 border-rose-600/40 text-rose-200', 'bg-sky-950/40 border-sky-600/40 text-sky-200', 'bg-amber-950/40 border-amber-600/40 text-amber-200', 'bg-emerald-950/40 border-emerald-600/40 text-emerald-200'];
         document.getElementById('host-answers-grid').innerHTML = q.options.map((opt, i) => `
@@ -770,6 +784,14 @@ class QualityGamesApp {
         document.getElementById('player-q-text').innerText = q.question;
         document.getElementById('player-question-container').classList.remove('hidden');
 
+        const imgContainer = document.getElementById('player-q-image-container');
+        if (q.image) {
+            imgContainer.classList.remove('hidden');
+            document.getElementById('player-q-image').src = q.image;
+        } else {
+            imgContainer.classList.add('hidden');
+        }
+
         document.getElementById('player-ans-0').innerText = q.options[0];
         document.getElementById('player-ans-1').innerText = q.options[1];
         document.getElementById('player-ans-2').innerText = q.options[2];
@@ -909,11 +931,38 @@ class QualityGamesApp {
                         </div>`).join('')}
                     </div>
                 </div>
+                <div class="space-y-2 pt-3 border-t border-slate-700">
+                    <label class="block text-[11px] font-bold text-slate-400 uppercase"><i class="fa-solid fa-image mr-1 text-sky-400"></i>Foto Domanda (opzionale)</label>
+                    <div class="flex items-center space-x-2">
+                        <button type="button" onclick="app.editorUploadImage(${idx})" class="flex-grow px-3 py-2 rounded-xl bg-sky-950/40 hover:bg-sky-900/60 text-sky-300 text-xs font-bold border border-sky-800/50 flex items-center justify-center space-x-2">
+                            <i class="fa-solid fa-upload"></i> <span>Carica Foto</span>
+                        </button>
+                        ${q.image ? `<button type="button" onclick="app.questions[${idx}].image = null; app.renderEditorQuestionsList();" class="px-3 py-2 rounded-xl bg-rose-950/40 hover:bg-rose-900/60 text-rose-300 text-xs font-bold border border-rose-800/50"><i class="fa-solid fa-trash"></i></button>` : ''}
+                    </div>
+                    ${q.image ? `<div class="rounded-xl overflow-hidden border border-slate-700 max-h-40"><img src="${q.image}" alt="Preview" class="w-full h-auto object-cover"></div>` : ''}
+                </div>
             </div>`).join('');
     }
 
+    editorUploadImage(idx) {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/*';
+        input.onchange = (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                this.questions[idx].image = event.target.result;
+                this.renderEditorQuestionsList();
+            };
+            reader.readAsDataURL(file);
+        };
+        input.click();
+    }
+
     editorAddNewQuestion() {
-        this.questions.push({ id: Date.now(), category: "Qualità Generale", question: "Nuova Domanda...", options: ["Opzione A", "Opzione B", "Opzione C", "Opzione D"], correct: 0, timer: 30 });
+        this.questions.push({ id: Date.now(), category: "Qualità Generale", question: "Nuova Domanda...", options: ["Opzione A", "Opzione B", "Opzione C", "Opzione D"], correct: 0, timer: 30, image: null });
         this.renderEditorQuestionsList();
     }
 
