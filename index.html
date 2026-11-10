@@ -519,7 +519,7 @@ class QualityGamesApp {
             game_state: 'GAME',
             current_question_idx: 0,
             answer_shown: false,
-            questions: this.questions
+            questions: this.questions.map(q => this.normalizeQuestion(q))
         }).eq('id', this.roomCode);
 
         this.hostLoadQuestion(0);
@@ -900,6 +900,14 @@ class QualityGamesApp {
 
     // ==================== QUESTION EDITOR ====================
 
+    normalizeQuestion(q) {
+        return {
+            ...q,
+            maxScorePercent: Math.max(0, Math.min(100, Number(q.maxScorePercent ?? 0) || 0)),
+            image: q.image || null
+        };
+    }
+
     openQuestionEditor() { this.renderEditorQuestionsList(); document.getElementById('modal-editor').classList.remove('hidden'); }
     closeQuestionEditor() { document.getElementById('modal-editor').classList.add('hidden'); document.getElementById('lobby-questions-count').innerText = this.questions.length + ' Domande'; }
 
@@ -919,10 +927,15 @@ class QualityGamesApp {
                         <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Timer (sec)</label>
                         <input type="number" min="5" max="120" value="${q.timer}" onchange="app.questions[${idx}].timer = parseInt(this.value) || 30" class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none">
                     </div>
-                    <div>
-                        <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Bonus massimo (%)</label>
-                        <input type="number" min="0" max="100" step="10" value="${q.maxScorePercent ?? 0}" onchange="app.questions[${idx}].maxScorePercent = Math.max(0, Math.min(100, parseInt(this.value) || 0))" class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none">
-                        <p class="text-[10px] text-slate-500 mt-1">0% = max 500 punti; 50% = 750; 100% = 1.000</p>
+                    <div class="sm:col-span-3 rounded-xl border border-indigo-500/40 bg-indigo-950/40 p-3">
+                        <label class="block text-xs font-extrabold text-indigo-200 uppercase mb-1">Bonus velocità massimo per questa domanda (%)</label>
+                        <div class="flex items-center gap-3">
+                            <input type="number" min="0" max="100" step="10" value="${q.maxScorePercent ?? 0}"
+                                oninput="app.questions[${idx}].maxScorePercent = Math.max(0, Math.min(100, Number(this.value) || 0)); document.getElementById('bonus-preview-${idx}').innerText = 500 + Math.round(500 * app.questions[${idx}].maxScorePercent / 100);"
+                                class="w-28 px-3 py-2 rounded-xl bg-slate-950 border border-indigo-500/50 text-base font-bold text-white focus:outline-none focus:border-indigo-300">
+                            <span class="text-xs text-slate-300">Massimo possibile: <strong id="bonus-preview-${idx}" class="text-emerald-300">${500 + Math.round(500 * (Number(q.maxScorePercent ?? 0) / 100))}</strong> punti</span>
+                        </div>
+                        <p class="text-[10px] text-slate-400 mt-1">0% = 500 punti; 50% = 750; 100% = 1.000. Il bonus effettivo dipende dal tempo rimasto.</p>
                     </div>
                 </div>
                 <div>
@@ -983,14 +996,15 @@ class QualityGamesApp {
 
     resetDefaultQuestions() {
         if (confirm("Ripristinare le domande predefinite?")) {
-            this.questions = JSON.parse(JSON.stringify(DEFAULT_QUALITY_QUESTIONS));
+            this.questions = JSON.parse(JSON.stringify(DEFAULT_QUALITY_QUESTIONS)).map(q => this.normalizeQuestion(q));
             this.renderEditorQuestionsList();
         }
     }
 
     exportQuestions() {
         const a = document.createElement('a');
-        a.href = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(this.questions, null, 2));
+        const exportQuestions = this.questions.map(q => this.normalizeQuestion(q));
+        a.href = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportQuestions, null, 2));
         a.download = "quality_questions_" + new Date().toISOString().slice(0, 10) + ".json";
         document.body.appendChild(a);
         a.click();
@@ -1009,7 +1023,7 @@ class QualityGamesApp {
             try {
                 const imported = JSON.parse(e.target.result);
                 if (Array.isArray(imported) && imported.length > 0 && imported[0].question && imported[0].options) {
-                    this.questions = imported;
+                    this.questions = imported.map(q => this.normalizeQuestion(q));
                     document.getElementById('lobby-questions-count').innerText = this.questions.length + ' Domande';
                     alert('Importate ' + this.questions.length + ' domande!');
                 } else {
