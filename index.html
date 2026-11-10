@@ -333,14 +333,14 @@ const { createClient } = window.supabase;
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const DEFAULT_QUALITY_QUESTIONS = [
-    { id: 1, category: "Incoming Inspection", question: "Nel piano di campionamento ISO 2859-1 (AQL), cosa indica un AQL dell'1.0%?", options: ["Il 1% del lotto viene sempre scartato", "Il livello di qualità accettabile massimo medio di non conformità", "Che si controlla solo 1 pezzo ogni 100 prodotti", "Un errore massimo tollerato del 10% sui controlli"], correct: 1, timer: 30, image: null },
-    { id: 2, category: "First Article Inspection (FAI)", question: "Secondo la norma AS9102 / ISO 9001, qual è il fine principale del FAI report?", options: ["Sostituire i controlli finali di collaudo", "Verificare che il processo sia capace di produrre parti conformi ai disegni", "Calcolare solo il costo della lavorazione meccanica", "Certificare l'imballo del primo pezzo"], correct: 1, timer: 30, image: null },
-    { id: 3, category: "Laboratorio Prove", question: "Durante una prova di trazione sul metallo, cosa rappresenta il punto di Snervamento (Yield Strength)?", options: ["Il momento in cui il provino si spezza", "La transizione dalla deformazione elastica a quella plastica permanente", "Il massimo carico sostenibile dalla provetta", "La percentuale di allungamento finale"], correct: 1, timer: 25, image: null },
-    { id: 4, category: "Qualità di Processo", question: "Cosa si intende per dispositivo 'Poka-Yoke' in una linea di assemblaggio?", options: ["Un software per la gestione dei turni", "Un meccanismo a prova di errore che impedisce lo sbaglio dell'operatore", "Un modulo per la registrazione dell'orario di lavoro", "Un tipo di calibro digitale per le filettature"], correct: 1, timer: 20, image: null },
-    { id: 5, category: "Qualità di Processo", question: "In una metodologia 8D Report per l'analisi dei problemi, qual è la fase D3?", options: ["Definizione del Team", "Azioni Contentive Immediate (ICA)", "Identificazione della Causa Radice (Root Cause)", "Azioni Correttive Permanenti (PCA)"], correct: 1, timer: 25, image: null },
-    { id: 6, category: "Laboratorio Prove", question: "Il test in Camera a Nebbia Salina (Salt Spray Test - ISO 9227) viene utilizzato per:", options: ["Misurare la durezza della superficie metallica", "Valutare la resistenza alla corrosione di rivestimenti e trattamenti", "Determinare la rugosità superficiale Ra", "Testare l'adesione della vernice su plastica"], correct: 1, timer: 25, image: null },
-    { id: 7, category: "First Article Inspection (FAI)", question: "Nelle tolleranze geometriche (GD&T), quale simbolo rappresenta la 'Posizione Vera' (True Position)?", options: ["Un cerchio con due linee a croce al centro (⌖)", "Due cerchi concentrici (◎)", "Una freccia inclinata (↗)", "Un parallelogramma (▱)"], correct: 0, timer: 20, image: null },
-    { id: 8, category: "Qualità di Processo", question: "Nel Controllo Statistico di Processo (SPC), un indice Cp o Cpk maggiore di 1.33 indica:", options: ["Un processo instabile e fuori controllo", "Un processo adeguatamente capace di rispettare le tolleranze", "Un tasso di scarto superiore al 5%", "Che la strumentazione va ricalibrata immediatamente"], correct: 1, timer: 25, image: null }
+    { id: 1, category: "Incoming Inspection", question: "Nel piano di campionamento ISO 2859-1 (AQL), cosa indica un AQL dell'1.0%?", options: ["Il 1% del lotto viene sempre scartato", "Il livello di qualità accettabile massimo medio di non conformità", "Che si controlla solo 1 pezzo ogni 100 prodotti", "Un errore massimo tollerato del 10% sui controlli"], correct: 1, timer: 30, image: null, maxScorePercent: 0 },
+    { id: 2, category: "First Article Inspection (FAI)", question: "Secondo la norma AS9102 / ISO 9001, qual è il fine principale del FAI report?", options: ["Sostituire i controlli finali di collaudo", "Verificare che il processo sia capace di produrre parti conformi ai disegni", "Calcolare solo il costo della lavorazione meccanica", "Certificare l'imballo del primo pezzo"], correct: 1, timer: 30, image: null, maxScorePercent: 0 },
+    { id: 3, category: "Laboratorio Prove", question: "Durante una prova di trazione sul metallo, cosa rappresenta il punto di Snervamento (Yield Strength)?", options: ["Il momento in cui il provino si spezza", "La transizione dalla deformazione elastica a quella plastica permanente", "Il massimo carico sostenibile dalla provetta", "La percentuale di allungamento finale"], correct: 1, timer: 25, image: null, maxScorePercent: 0 },
+    { id: 4, category: "Qualità di Processo", question: "Cosa si intende per dispositivo 'Poka-Yoke' in una linea di assemblaggio?", options: ["Un software per la gestione dei turni", "Un meccanismo a prova di errore che impedisce lo sbaglio dell'operatore", "Un modulo per la registrazione dell'orario di lavoro", "Un tipo di calibro digitale per le filettature"], correct: 1, timer: 20, image: null, maxScorePercent: 0 },
+    { id: 5, category: "Qualità di Processo", question: "In una metodologia 8D Report per l'analisi dei problemi, qual è la fase D3?", options: ["Definizione del Team", "Azioni Contentive Immediate (ICA)", "Identificazione della Causa Radice (Root Cause)", "Azioni Correttive Permanenti (PCA)"], correct: 1, timer: 25, image: null, maxScorePercent: 0 },
+    { id: 6, category: "Laboratorio Prove", question: "Il test in Camera a Nebbia Salina (Salt Spray Test - ISO 9227) viene utilizzato per:", options: ["Misurare la durezza della superficie metallica", "Valutare la resistenza alla corrosione di rivestimenti e trattamenti", "Determinare la rugosità superficiale Ra", "Testare l'adesione della vernice su plastica"], correct: 1, timer: 25, image: null, maxScorePercent: 0 },
+    { id: 7, category: "First Article Inspection (FAI)", question: "Nelle tolleranze geometriche (GD&T), quale simbolo rappresenta la 'Posizione Vera' (True Position)?", options: ["Un cerchio con due linee a croce al centro (⌖)", "Due cerchi concentrici (◎)", "Una freccia inclinata (↗)", "Un parallelogramma (▱)"], correct: 0, timer: 20, image: null, maxScorePercent: 0 },
+    { id: 8, category: "Qualità di Processo", question: "Nel Controllo Statistico di Processo (SPC), un indice Cp o Cpk maggiore di 1.33 indica:", options: ["Un processo instabile e fuori controllo", "Un processo adeguatamente capace di rispettare le tolleranze", "Un tasso di scarto superiore al 5%", "Che la strumentazione va ricalibrata immediatamente"], correct: 1, timer: 25, image: null, maxScorePercent: 0 }
 ];
 
 class SoundEngine {
@@ -821,8 +821,12 @@ class QualityGamesApp {
         this.myAnswerCorrect = (idx === q.correct);
 
         if (this.myAnswerCorrect) {
-            const speedBonus = Math.round((this.timeLeft / q.timer) * 500);
-            this.myScore += 500 + speedBonus;
+            const maxScorePercent = Math.max(0, Math.min(100, Number(q.maxScorePercent ?? 0)));
+            const timeRatio = Math.max(0, Math.min(1, this.timeLeft / q.timer));
+            // 500 punti nominali + bonus velocità proporzionale alla percentuale impostata.
+            // 0% = massimo 500; 50% = massimo 750; 100% = massimo 1000.
+            const earnedPoints = Math.round(500 + (500 * maxScorePercent / 100) * timeRatio);
+            this.myScore += earnedPoints;
             await this.supabase.from('players').update({ 
                 score: this.myScore
             }).eq('id', this.playerData.id);
@@ -915,6 +919,11 @@ class QualityGamesApp {
                         <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Timer (sec)</label>
                         <input type="number" min="5" max="120" value="${q.timer}" onchange="app.questions[${idx}].timer = parseInt(this.value) || 30" class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none">
                     </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Bonus massimo (%)</label>
+                        <input type="number" min="0" max="100" step="10" value="${q.maxScorePercent ?? 0}" onchange="app.questions[${idx}].maxScorePercent = Math.max(0, Math.min(100, parseInt(this.value) || 0))" class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none">
+                        <p class="text-[10px] text-slate-500 mt-1">0% = max 500 punti; 50% = 750; 100% = 1.000</p>
+                    </div>
                 </div>
                 <div>
                     <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Testo Domanda</label>
@@ -962,7 +971,7 @@ class QualityGamesApp {
     }
 
     editorAddNewQuestion() {
-        this.questions.push({ id: Date.now(), category: "Qualità Generale", question: "Nuova Domanda...", options: ["Opzione A", "Opzione B", "Opzione C", "Opzione D"], correct: 0, timer: 30, image: null });
+        this.questions.push({ id: Date.now(), category: "Qualità Generale", question: "Nuova Domanda...", options: ["Opzione A", "Opzione B", "Opzione C", "Opzione D"], correct: 0, timer: 30, image: null, maxScorePercent: 0 });
         this.renderEditorQuestionsList();
     }
 
